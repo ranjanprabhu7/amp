@@ -7,13 +7,8 @@ async function fetchDataAndRender() {
     const response = await fetch('https://jsonplaceholder.typicode.com/users');
     const data = await response.json();
 
-    // Get the container element or create one
-    let container = document.getElementById('data-list');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'data-list';
-      document.body.appendChild(container);
-    }
+    // Get the container inside amp-script
+    const container = document.getElementById('container');
     container.innerHTML = '';
 
     // Render a list of divs for each user
@@ -26,9 +21,11 @@ async function fetchDataAndRender() {
       container.appendChild(userDiv);
     });
   } catch (error) {
-    console.error('Error fetching data:', error);
+    // Error logging is limited inside AMP-script
+    const container = document.getElementById('container');
+    container.textContent = 'Error fetching data!';
   }
 }
 
-// Run on page load
-window.onload = fetchDataAndRender;
+// Run immediately (no window.onload)
+fetchDataAndRender();
