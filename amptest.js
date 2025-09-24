@@ -1,31 +1,23 @@
 // amptest.js
-// Fetches data from a dummy API and renders a list of divs in the DOM
-
-async function fetchDataAndRender() {
+(async function fetchDataAndRender() {
   try {
-    // Fetch data from a dummy API
-    const response = await fetch('https://jsonplaceholder.typicode.com/users');
+    const response = await self.fetch(
+      "https://jsonplaceholder.typicode.com/users"
+    );
     const data = await response.json();
 
-    // Get the container inside amp-script
-    const container = document.getElementById('container');
-    container.innerHTML = '';
+    // Select all price placeholders inside the amp-script subtree
+    const priceDivs = self.document.querySelectorAll(".price");
 
-    // Render a list of divs for each user
-    data.forEach(user => {
-      const userDiv = document.createElement('div');
-      userDiv.textContent = `${user.name} (${user.email})`;
-      userDiv.style.margin = '8px 0';
-      userDiv.style.padding = '8px';
-      userDiv.style.border = '1px solid #ccc';
-      container.appendChild(userDiv);
+    // Assign a user to each price div (cycling if fewer users than divs)
+    priceDivs.forEach((div, i) => {
+      const user = data[i % data.length];
+      div.textContent = `${user.name} (${user.email})`;
+      // ✅ Do NOT set styles via JS; use CSS in amp-custom
     });
   } catch (error) {
-    // Error logging is limited inside AMP-script
-    const container = document.getElementById('container');
-    container.textContent = 'Error fetching data!';
+    // Fallback if API fails
+    const priceDivs = self.document.querySelectorAll(".price");
+    priceDivs.forEach((div) => (div.textContent = "Error loading data"));
   }
-}
-
-// Run immediately (no window.onload)
-fetchDataAndRender();
+})();
