@@ -1,23 +1,43 @@
 // amptest.js
-(async function fetchDataAndRender() {
+(async function fetchPrices() {
   try {
-    const response = await self.fetch(
-      "https://jsonplaceholder.typicode.com/users"
-    );
-    const data = await response.json();
-
-    // Select all price placeholders inside the amp-script subtree
+    // 1️⃣ Get all price placeholders and collect their URLs
     const priceDivs = self.document.querySelectorAll(".price");
+    const urls = Array.from(priceDivs)
+      .map((div) => div.dataset.url)
+      .filter(Boolean); // ensure no empty URLs
 
-    // Assign a user to each price div (cycling if fewer users than divs)
-    priceDivs.forEach((div, i) => {
-      const user = data[i % data.length];
-      div.textContent = `${user.name} (${user.email})`;
-      // ✅ Do NOT set styles via JS; use CSS in amp-custom
+    if (urls.length === 0) return;
+
+    // 2️⃣ Call the batch price API
+    const response = await self.fetch("https://v.zzazz.com/v2/price", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        currency: "inr",
+        urls: urls,
+      }),
+    });
+
+    const data = await response.json();
+    // Assuming API returns { prices: { "url1": 100, "url2": 200, ... } }
+    const priceMap = data.prices || {};
+
+    // 3️⃣ Update each div with the price for its URL
+    priceDivs.forEach((div) => {
+      const url = div.dataset.url;
+      if (url && priceMap[url] != null) {
+        div.textContent = `₹${priceMap[url]}`;
+      } else {
+        div.textContent = "Price unavailable";
+      }
     });
   } catch (error) {
     // Fallback if API fails
     const priceDivs = self.document.querySelectorAll(".price");
-    priceDivs.forEach((div) => (div.textContent = "Error loading data"));
+    priceDivs.forEach((div) => (div.textContent = "Error loading price"));
   }
 })();

@@ -117,3 +117,74 @@ Blocked N attempts to modify DOM element attributes or styles. For variable-size
 
 * JS inside amp-script only updates `.price` div with `textContent`.
 * No mutations to `<h2>` or `<amp-img>`.
+
+
+# AMP-Script Layouts & DOM Mutation Rules
+
+This document explains how AMP handles `<amp-script>` mutations depending on the layout type, and when to consider using `<amp-list>` instead.
+
+---
+
+## 1. `layout="fixed"`
+
+- **Behavior**: AMP reserves a fixed space in the page layout (e.g., `height="50"`).
+- **Allowed mutations**: Authored nodes inside the `<amp-script>` can be updated **immediately**, without waiting for user interaction.
+- **Best for**: Use cases where content should load and display automatically (e.g., fetching prices, ads, or metadata).
+
+✅ Example:
+```html
+<amp-script layout="fixed" height="50" src="script.js">
+  <div class="price"></div>
+</amp-script>
+
+2. layout="container"
+Behavior: AMP does not know the script’s size upfront; it expands dynamically based on content.
+Restrictions: To avoid layout shifts, AMP blocks most DOM mutations (like appending/removing children, setting innerHTML, or changing styles) until the user interacts.
+User interactions that unlock mutations:
+Tap/click events
+Form submissions
+Typing/focus in inputs
+Certain scroll events
+❌ Automatic API-driven updates will fail with "Blocked mutation" errors until interaction.
+✅ Suitable for interactive widgets where the user explicitly triggers the change.
+
+3. amp-list (alternative to amp-script)
+What it is: A dedicated AMP component that fetches JSON data from an API and renders it via <template>.
+Why use it:
+Designed for dynamic, API-driven content.
+No mutation restrictions like <amp-script> in container mode.
+Automatically handles layout and templating.
+✅ Example:
+<amp-list
+  width="auto"
+  height="100"
+  layout="fixed-height"
+  src="https://api.example.com/prices"
+>
+  <template type="amp-mustache">
+    <div class="price">{{price}}</div>
+  </template>
+</amp-list>
+
+4. Practical Recommendation
+For automatic price injection into articles → use amp-script layout="fixed" with preallocated height.
+If prices should render only after user interaction → use amp-script layout="container".
+For batch-fetching many prices or articles → strongly consider amp-list with templates.
+
+5. Summary Table
+Layout/Component	Auto updates allowed?	Requires user interaction?	Best use case
+amp-script (fixed)	✅ Yes	❌ No	Automatic API-driven updates with known height
+amp-script (container)	❌ No	✅ Yes	Interactive widgets that mutate on user action
+amp-list	✅ Yes	❌ No	Bulk API-driven rendering with templates
+
+6. Visual Flow (for clarity)
+amp-script (fixed)
+Page loads → Script runs → Mutations applied immediately → Content visible
+amp-script (container)
+Page loads → Script runs → Mutations BLOCKED → User interacts (tap/click/etc.) → Mutations allowed → Content visible
+amp-list
+Page loads → Component fetches JSON → Renders via template → Content visible
+
+---
+
+Do you also want me to merge in the **error notes & root causes** (like *"Blocked DOM mutation errors"*, *"amp-script terminated"* etc.) into this same `.md` file, so your team has **all the gotchas + solutions in one place**?
