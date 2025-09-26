@@ -9,6 +9,8 @@
 
     if (urls.length === 0) return;
 
+    console.log("URLs to fetch:", urls);
+
     // 2️⃣ Call the batch price API
     const response = await self.fetch("https://v.zzazz.com/v2/price", {
       method: "POST",
@@ -23,6 +25,7 @@
     });
 
     const data = await response.json();
+    console.log("data :", data);
     // Assuming API returns { prices: { "url1": 100, "url2": 200, ... } }
     const priceMap = data.prices || {};
 
