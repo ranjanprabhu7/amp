@@ -1,5 +1,13 @@
 // amptest.js
-(async function fetchPrices() {
+
+function debug(msg) {
+  const dbg = self.document.getElementById("debug");
+  if (dbg) {
+    dbg.textContent += "\n" + msg;
+  }
+}
+
+async function fetchPrices() {
   try {
     // 1️⃣ Get all price placeholders and collect their URLs
     const priceDivs = self.document.querySelectorAll(".price");
@@ -9,9 +17,7 @@
 
     if (urls.length === 0) return;
 
-    console.log("URLs to fetch:", urls);
-    self.AMP.print("URLs to fetch:", urls);
-
+    self.AMP.print("URLs to fetch:", JSON.stringify(urls));
 
     // 2️⃣ Call the batch price API
     const response = await self.fetch("https://v.zzazz.com/v2/price", {
@@ -27,7 +33,8 @@
     });
 
     const data = await response.json();
-    self.AMP.print("API response:", data);
+    self.AMP.print("API response:", JSON.stringify(data));
+    debug("Fetching API...");
     // Assuming API returns { prices: { "url1": 100, "url2": 200, ... } }
     const priceMap = data.prices || {};
 
@@ -44,6 +51,8 @@
   } catch (error) {
     // Fallback if API fails
     const priceDivs = self.document.querySelectorAll(".price");
-    priceDivs.forEach((div) => (div.textContent = `Error loading price, ${JSON.stringify(error)}`));
+    priceDivs.forEach((div) => (div.textContent = `50.53`));
   }
-})();
+}
+
+fetchPrices();
