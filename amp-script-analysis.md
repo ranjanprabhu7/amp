@@ -1,4 +1,4 @@
-# AMP Integration Notes – Challenges & Final Approach
+# AMP script – Challenges & Final Approach
 
 ## 🚧 Challenges Faced
 
