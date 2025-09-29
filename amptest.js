@@ -5,21 +5,31 @@ function debug(msg) {
   if (dbg) {
     dbg.textContent += "\n" + msg;
   }
+  // also try AMP.print for dev console (strings only!)
+  try {
+    self.AMP.print(msg);
+  } catch (e) {
+    // ignore if AMP.print not available
+  }
 }
 
 async function fetchPrices() {
   try {
-    // 1️⃣ Get all price placeholders and collect their URLs
+    debug("🔍 Collecting price divs...");
     const priceDivs = self.document.querySelectorAll(".price");
     const urls = Array.from(priceDivs)
       .map((div) => div.dataset.url)
-      .filter(Boolean); // ensure no empty URLs
+      .filter(Boolean);
 
-    if (urls.length === 0) return;
+    debug("Found " + urls.length + " URLs");
+    debug("URLs: " + JSON.stringify(urls));
 
-    self.AMP.print("URLs to fetch:", JSON.stringify(urls));
+    if (urls.length === 0) {
+      debug("❌ No URLs found, exiting");
+      return;
+    }
 
-    // 2️⃣ Call the batch price API
+    debug("📡 Sending fetch request...");
     const response = await self.fetch("https://v.zzazz.com/v2/price", {
       method: "POST",
       headers: {
@@ -32,26 +42,38 @@ async function fetchPrices() {
       }),
     });
 
-    const data = await response.json();
-    self.AMP.print("API response:", JSON.stringify(data));
-    debug("Fetching API...");
-    // Assuming API returns { prices: { "url1": 100, "url2": 200, ... } }
-    const priceMap = data.prices || {};
+    debug("✅ Response status: " + response.status);
 
-    // 3️⃣ Update each div with the price for its URL
+    const text = await response.text();
+    debug("Raw response: " + text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+      debug("Parsed JSON OK");
+    } catch (err) {
+      debug("❌ JSON parse error: " + err.message);
+      return;
+    }
+
+    // Expected structure: { prices: { "url1": 100, "url2": 200, ... } }
+    const priceMap = data.prices || {};
+    debug("Price map: " + JSON.stringify(priceMap));
+
     priceDivs.forEach((div) => {
-      div.textContent = JSON.stringify(data);
-      // const url = div.dataset.url;
-      // if (url && priceMap[url] != null) {
-      //   div.textContent = `₹${priceMap[url]}`;
-      // } else {
-      //   div.textContent = "Price unavailable";
-      // }
+      const url = div.dataset.url;
+      if (url && priceMap[url] != null) {
+        div.textContent = `₹${priceMap[url]}`;
+        debug(`✔ Updated price for ${url}: ₹${priceMap[url]}`);
+      } else {
+        div.textContent = "Price unavailable";
+        debug(`⚠ No price found for ${url}`);
+      }
     });
   } catch (error) {
-    // Fallback if API fails
+    debug("❌ Fetch failed: " + error.message);
     const priceDivs = self.document.querySelectorAll(".price");
-    priceDivs.forEach((div) => (div.textContent = `50.53`));
+    priceDivs.forEach((div) => (div.textContent = "Error loading price"));
   }
 }
 
