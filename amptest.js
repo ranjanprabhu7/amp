@@ -43,18 +43,22 @@ async function fetchPrices() {
       const priceInfo = data[url];
 
       if (priceInfo && priceInfo.price != null) {
-        div.textContent = `₹${priceInfo.price.toFixed(2)} (${priceInfo.currency})`;
+        div.textContent = `₹${priceInfo.price.toFixed(2)} (${
+          priceInfo.currency
+        })`;
         if (priceInfo.insights && priceInfo.insights.category) {
           div.textContent += ` • ${priceInfo.insights.category}`;
+          div.classList.add("success");
         }
       } else {
         div.textContent = "Price unavailable";
+        div.classList.add("error");
       }
     });
   } catch (error) {
     debug("❌ Fetch failed: " + error.message);
     const priceDivs = self.document.querySelectorAll(".price");
-    priceDivs.forEach((div) => (div.textContent = `50.53`));
+    priceDivs.forEach((div) => (div.textContent = `could not fetch price`));
   }
 }
 

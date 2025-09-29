@@ -68,6 +68,54 @@
         }
       }
     </style>
+    <style amp-custom>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .article-list {
+        display: grid;
+        gap: 20px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      a {
+        text-decoration: none;
+        color: #2c3e50;
+      }
+
+      /* 🎨 Styles for price divs */
+      .price {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #f6f9fc;
+        color: #2c3e50;
+        font-weight: bold;
+        font-size: 14px;
+        border: 1px solid #ddd;
+      }
+
+      .price.error {
+        color: #e74c3c;
+        background: #fdecea;
+        border-color: #f5c6cb;
+      }
+
+      .price.success {
+        color: #2e7d32;
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+      }
+    </style>
+
     <noscript>
       <style amp-boilerplate>
         body {
