@@ -10,6 +10,8 @@
     if (urls.length === 0) return;
 
     console.log("URLs to fetch:", urls);
+    self.AMP.print("URLs to fetch:", urls);
+
 
     // 2️⃣ Call the batch price API
     const response = await self.fetch("https://v.zzazz.com/v2/price", {
@@ -25,7 +27,7 @@
     });
 
     const data = await response.json();
-    console.log("data :", data);
+    self.AMP.print("API response:", data);
     // Assuming API returns { prices: { "url1": 100, "url2": 200, ... } }
     const priceMap = data.prices || {};
 
@@ -41,6 +43,6 @@
   } catch (error) {
     // Fallback if API fails
     const priceDivs = self.document.querySelectorAll(".price");
-    priceDivs.forEach((div) => (div.textContent = "Error loading price"));
+    priceDivs.forEach((div) => (div.textContent = `Error loading price, ${JSON.stringify(error)}`));
   }
 })();
