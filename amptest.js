@@ -18,7 +18,7 @@ async function fetchPrices() {
     debug("🔍 Collecting price divs...");
     const priceDivs = self.document.querySelectorAll(".price");
     const urls = Array.from(priceDivs)
-      .map((div) => div.dataset.url)
+      .map((div) => div.getAttribute("data-url"))
       .filter(Boolean);
 
     debug("Found " + urls.length + " URLs");
