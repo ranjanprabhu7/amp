@@ -33,6 +33,7 @@
 
     // 3️⃣ Update each div with the price for its URL
     priceDivs.forEach((div) => {
+      div.textContent = JSON.stringify(data);
       const url = div.dataset.url;
       if (url && priceMap[url] != null) {
         div.textContent = `₹${priceMap[url]}`;
