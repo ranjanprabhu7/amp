@@ -10,7 +10,7 @@ async function fetchPrices() {
     // Collect all placeholders
     const priceDivs = self.document.querySelectorAll(".price");
     const urls = Array.from(priceDivs)
-      .map((div) => div.getAttribute("data-url")) // ✅ use getAttribute
+      .map((div) => div.getAttribute("data-url"))
       .filter(Boolean);
 
     debug("🔍 Collecting price divs... " + urls.length);
@@ -36,16 +36,12 @@ async function fetchPrices() {
     const data = await response.json();
     debug("✅ API response received");
 
-    // API response is like:
-    // { "url1": { price, currency, insights }, "url2": { ... } }
     priceDivs.forEach((div) => {
       const url = div.getAttribute("data-url");
       const priceInfo = data[url];
 
       if (priceInfo && priceInfo.price != null) {
-        div.textContent = `₹${priceInfo.price.toFixed(2)} (${
-          priceInfo.currency
-        })`;
+        div.textContent = `₹${priceInfo.price.toFixed(2)} (${priceInfo.currency})`;
         if (priceInfo.insights && priceInfo.insights.category) {
           div.textContent += ` • ${priceInfo.insights.category}`;
           div.classList.add("success");
@@ -63,4 +59,9 @@ async function fetchPrices() {
 }
 
 debug("🚀 amptest.js started");
+
+// Initial fetch
 fetchPrices();
+
+// Update every 5 seconds (5000 ms)
+setInterval(fetchPrices, 5000);
