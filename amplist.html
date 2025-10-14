@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html ⚡ lang="en" data-ampdevmode>
+  <head>
+    <meta charset="utf-8" />
+    <title>My AMP Blog</title>
+    <link rel="canonical" href="index.html" />
+    <meta
+      name="viewport"
+      content="width=device-width,minimum-scale=1,initial-scale=1"
+    />
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+    <script
+      async
+      custom-element="amp-list"
+      src="https://cdn.ampproject.org/v0/amp-list-0.1.js"
+    ></script>
+    <script
+      async
+      custom-template="amp-mustache"
+      src="https://cdn.ampproject.org/v0/amp-mustache-0.1.js"
+    ></script>
+    <style amp-boilerplate>
+      body {
+        -webkit-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        -moz-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        -ms-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+        animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+      }
+      @-webkit-keyframes -amp-start {
+        from {
+          visibility: hidden;
+        }
+        to {
+          visibility: visible;
+        }
+      }
+      @-moz-keyframes -amp-start {
+        from {
+          visibility: hidden;
+        }
+        to {
+          visibility: visible;
+        }
+      }
+      @-ms-keyframes -amp-start {
+        from {
+          visibility: hidden;
+        }
+        to {
+          visibility: visible;
+        }
+      }
+      @-o-keyframes -amp-start {
+        from {
+          visibility: hidden;
+        }
+        to {
+          visibility: visible;
+        }
+      }
+      @keyframes -amp-start {
+        from {
+          visibility: hidden;
+        }
+        to {
+          visibility: visible;
+        }
+      }
+    </style>
+    <style amp-custom>
+      /* ... (Existing styles for body, h1, .article-list, .card, a) ... */
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .article-list {
+        display: grid;
+        gap: 20px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      a {
+        text-decoration: none;
+        color: #2c3e50;
+      }
+
+      /* 🎨 Styles for price divs */
+      .price {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #f6f9fc;
+        color: #2c3e50;
+        font-weight: bold;
+        font-size: 14px;
+        border: 1px solid #ddd;
+      }
+
+      .price.error {
+        color: #e74c3c;
+        background: #fdecea;
+        border-color: #f5c6cb;
+      }
+
+      .price.success {
+        color: #2e7d32;
+        background: #e8f5e9;
+        border-color: #c8e6c9;
+      }
+    </style>
+
+    <noscript>
+      <style amp-boilerplate>
+        body {
+          -webkit-animation: none;
+          -moz-animation: none;
+          -ms-animation: none;
+          animation: none;
+        }
+      </style>
+    </noscript>
+    <style amp-custom>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .article-list {
+        display: grid;
+        gap: 20px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      a {
+        text-decoration: none;
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My AMP Blog</h1>
+    <amp-list
+      layout="container"
+      class="article-list"
+      src="./mock-data.json"
+      class="article-list"
+    >
+      <div placeholder>Loading articles and prices...</div>
+
+      <div fallback>Could not load articles.</div>
+
+      <template type="amp-mustache">
+        <div class="card">
+          <a href="{{articleUrl}}">
+            <h2>{{title}}</h2>
+            <amp-img
+              src="{{imgSrc}}"
+              width="600"
+              height="300"
+              layout="responsive"
+            ></amp-img>
+          </a>
+
+          {{#priceInfo.price}}
+          <div
+            data-url="{{articleUrl}}"
+            class="price {{#priceInfo.category}}success{{/priceInfo.category}}{{^priceInfo.category}}error{{/priceInfo.category}}"
+          >
+            ₹{{priceInfo.price}} ({{priceInfo.currency}})
+            {{#priceInfo.category}} •
+            {{priceInfo.category}}{{/priceInfo.category}}
+          </div>
+          {{/priceInfo.price}} {{^priceInfo.price}}
+          <div data-url="{{articleUrl}}" class="price error">
+            Price unavailable
+          </div>
+          {{/priceInfo.price}}
+        </div>
+      </template>
+    </amp-list>
+  </body>
+</html>
