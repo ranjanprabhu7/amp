@@ -64,4 +64,10 @@ debug("🚀 amptest.js started");
 fetchPrices();
 
 // Update every 5 seconds (5000 ms)
-setInterval(fetchPrices, 5000);
+// setInterval(fetchPrices, 5000);
+// If you really need a recurring update, use a recursive setTimeout
+function pollPrices() {
+    fetchPrices().then(() => {
+        setTimeout(pollPrices, 5000); // 5 seconds
+    });
+}
