@@ -86,11 +86,36 @@ const injectPriceArticleLevel = () => {
         const trendImg = trendEl.querySelector("amp-img");
         if (lastPrice !== null) {
           if (newPrice > lastPrice) {
-            trendEl.style.backgroundColor = "#2aba7e33"; // green
-            trendImg.setAttribute("src", "https://yashgargzzazz.github.io/ht-amp-dummy/assets/up.svg");
+            trendEl.style.cssText = `
+              padding: 4px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 16px;
+              width: 16px;
+              background-color: #2aba7e33;
+            `;
+            trendImg.setAttribute(
+              "src",
+              "https://yashgargzzazz.github.io/ht-amp-dummy/assets/up.svg"
+            );
           } else if (newPrice < lastPrice) {
-            trendEl.style.backgroundColor = "#ff4d4d33"; // red
-            trendImg.setAttribute("src", "https://yashgargzzazz.github.io/ht-amp-dummy/assets/down.svg");
+            trendEl.style.cssText = `
+              padding: 4px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 16px;
+              width: 16px;
+              background-color: #ff4d4d33;
+            `;
+
+            trendImg.setAttribute(
+              "src",
+              "https://yashgargzzazz.github.io/ht-amp-dummy/assets/down.svg"
+            );
           }
         }
         lastPrice = newPrice;
