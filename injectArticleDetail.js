@@ -61,7 +61,8 @@ const injectPriceArticleLevel = () => {
   const signalDiv = document.getElementById("zzazz-signal-div");
   const articleUrl = signalDiv.getAttribute("data-url");
   const priceEl = document.getElementById("zzazz-price");
-  const trendEl = document.getElementById("zzazz-trend");
+  const trendElUp = document.getElementById("zzazz-trend-up");
+  const trendElDown = document.getElementById("zzazz-trend-down");
 
   const raw = JSON.stringify({ urls: [articleUrl], currency: "inr" });
   const requestOptions = {
@@ -82,19 +83,37 @@ const injectPriceArticleLevel = () => {
       }
 
       // Update trend icon
-      if (trendEl) {
-        const trendImg = trendEl.querySelector("amp-img");
-        if (lastPrice !== null) {
-          if (newPrice > lastPrice) {
-            trendEl.style.backgroundColor = "#2aba7e33"; // green
-            trendImg.setAttribute("src", "https://yashgargzzazz.github.io/ht-amp-dummy/assets/up.svg");
-          } else if (newPrice < lastPrice) {
-            trendEl.style.backgroundColor = "#ff4d4d33"; // red
-            trendImg.setAttribute("src", "https://yashgargzzazz.github.io/ht-amp-dummy/assets/down.svg");
-          }
+
+      if (lastPrice !== null) {
+        if (newPrice > lastPrice) {
+          trendElDown.style.display = "none";
+          trendElUp.style.cssText = `
+              padding: 4px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 16px;
+              width: 16px;
+              background-color: #2aba7e33;
+              display: flex;
+            `;
+        } else if (newPrice < lastPrice) {
+          trendElUp.style.display = "none";
+          trendElDown.style.cssText = `
+              padding: 4px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 16px;
+              width: 16px;
+              background-color: #ff4d4d33;
+              display: flex;
+            `;
         }
-        lastPrice = newPrice;
       }
+      lastPrice = newPrice;
     })
     .catch((err) => console.error("Price fetch error:", err));
 };
