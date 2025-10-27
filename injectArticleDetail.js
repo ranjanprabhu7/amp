@@ -88,27 +88,23 @@ const injectPriceArticleLevel = () => {
         if (newPrice > lastPrice) {
           trendElDown.style.display = "none";
           trendElUp.style.cssText = `
-              padding: 4px;
               border-radius: 4px;
               display: flex;
               align-items: center;
               justify-content: center;
               height: 16px;
               width: 16px;
-              background-color: #2aba7e33;
               display: flex;
             `;
         } else if (newPrice < lastPrice) {
           trendElUp.style.display = "none";
           trendElDown.style.cssText = `
-              padding: 4px;
               border-radius: 4px;
               display: flex;
               align-items: center;
               justify-content: center;
               height: 16px;
               width: 16px;
-              background-color: #ff4d4d33;
               display: flex;
             `;
         }
