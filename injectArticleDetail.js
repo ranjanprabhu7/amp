@@ -54,8 +54,28 @@ async function sendPoll() {
   }
 }
 
+async function sendPriceEvent({ price, currency }) {
+  const user_id = localStorage.getItem("user_id") || "TEST_ID";
+  const event_id = localStorage.getItem("event_id") || "TEST_ID";
+
+  const payload = { type: "price", id: event_id, price, currency };
+  try {
+    await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": user_id,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error("Poll error:", error);
+  }
+}
+
 // --- Price Injection ---
 let lastPrice = null;
+let priceEventSent = false;
 
 const injectPriceArticleLevel = () => {
   const signalDiv = document.getElementById("zzazz-signal-div");
@@ -76,6 +96,12 @@ const injectPriceArticleLevel = () => {
     .then((data) => {
       const priceData = data[articleUrl];
       const newPrice = priceData.price?.toFixed(2) || "0.00";
+
+      // Fire price event once when price is received for the first time
+      if (priceData.price !== undefined && !priceEventSent) {
+        sendPriceEvent({ price: priceData.price, currency: "inr" });
+        priceEventSent = true;
+      }
 
       // Update price
       if (priceEl) {
