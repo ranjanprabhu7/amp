@@ -96,7 +96,7 @@ const injectPriceArticleLevel = () => {
 
       // 👀 Show the entire div only once price is ready
       if (!firstVisible) {
-        signalDiv.style.display = "flex";
+        signalDiv.style.visibility = "visible";
         firstVisible = true;
       }
 
