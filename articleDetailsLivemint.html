@@ -4222,6 +4222,45 @@
       .mascotToggle:checked ~ .stockGroWrapper {
         display: none;
       }
+
+      /* zzazz styles */
+      #zzazz-signal-div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #333;
+        border-radius: 120px;
+        padding: 6px 12px;
+        background: #fff;
+        font-family: "Inter", sans-serif;
+        width: fit-content;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #zzazz-signal-div.hidden {
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      #zzazz-price {
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      #zzazz-trend-up,
+      #zzazz-trend-down {
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 16px;
+        width: 16px;
+      }
     </style>
   </head>
 
@@ -7369,57 +7408,29 @@
           height="40px"
           width="180px"
           src="https://ranjanprabhu7.github.io/amp/injectArticleDetail.js"
-          style="line-height: 16px !important"
         >
           <div
             data-url="https://www.livemint.com/market/stock-market-news/infosys-q2-results-profit-revenue-deal-tcv-guidance-attrition-dividend-5-highlights-from-it-firms-q2-earnings-11760607013880.html"
             id="zzazz-signal-div"
-            style="
-              visibility: hidden;
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              border: 1px solid #333;
-              border-radius: 120px;
-              padding: 6px 12px;
-              background: #fff;
-              font-family: 'Inter', sans-serif;
-              width: fit-content;
-            "
+            class="hidden"
           >
+            <!-- Logo -->
             <amp-img
               src="https://cdn.zzazz.com/assets/zzazz_logo_white.svg"
               width="20"
               height="20"
               layout="fixed"
               alt="zzazz-logo"
-              style="filter: invert(1); display: block"
+              style="filter: invert(1)"
             ></amp-img>
 
-            <h2
-              id="zzazz-price"
-              style="
-                margin: 0;
-                padding: 0;
-                font-size: 16px;
-                font-weight: 600;
-                color: #1a1a1a;
-              "
-            >
+            <!-- Price -->
+            <h2 id="zzazz-price">
               --.-- <span style="font-size: 16px; font-weight: 600">QAP</span>
             </h2>
 
-            <div
-              id="zzazz-trend-up"
-              style="
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 16px;
-                width: 16px;
-              "
-            >
+            <!-- Trend Up -->
+            <div id="zzazz-trend-up">
               <svg
                 width="15"
                 height="16"
@@ -7434,17 +7445,8 @@
               </svg>
             </div>
 
-            <div
-              id="zzazz-trend-down"
-              style="
-                border-radius: 4px;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                height: 16px;
-                width: 16px;
-              "
-            >
+            <!-- Trend Down -->
+            <div id="zzazz-trend-down" style="display: none">
               <svg
                 width="15"
                 height="16"
