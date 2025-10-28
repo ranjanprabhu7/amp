@@ -7,19 +7,14 @@ function getDeviceDimensions() {
   };
 }
 
-// --- Analytics Calls ---
+// ---------- Analytics ----------
 async function sendPageview({ url }) {
   const device = getDeviceDimensions();
   const user_id = localStorage.getItem("user_id") || "";
-
-  const payload = {
-    url: url || "",
-    device,
-    type: "pageview",
-  };
+  const payload = { url: url || "", device, type: "pageview" };
 
   try {
-    const response = await fetch(BASE_URL, {
+    const res = await fetch(BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,19 +22,19 @@ async function sendPageview({ url }) {
       },
       body: JSON.stringify(payload),
     });
-    const json = await response.json();
+    const json = await res.json();
     localStorage.setItem("user_id", json.user_id);
     localStorage.setItem("event_id", json.event_id);
-  } catch (error) {
-    console.error("Pageview error:", error);
+  } catch (e) {
+    console.error("Pageview error:", e);
   }
 }
 
 async function sendPoll() {
   const user_id = localStorage.getItem("user_id") || "TEST_ID";
   const event_id = localStorage.getItem("event_id") || "TEST_ID";
-
   const payload = { type: "poll", id: event_id };
+
   try {
     await fetch(BASE_URL, {
       method: "POST",
@@ -49,16 +44,16 @@ async function sendPoll() {
       },
       body: JSON.stringify(payload),
     });
-  } catch (error) {
-    console.error("Poll error:", error);
+  } catch (e) {
+    console.error("Poll error:", e);
   }
 }
 
 async function sendPriceEvent({ price, currency }) {
   const user_id = localStorage.getItem("user_id") || "TEST_ID";
   const event_id = localStorage.getItem("event_id") || "TEST_ID";
-
   const payload = { type: "price", id: event_id, price, currency };
+
   try {
     await fetch(BASE_URL, {
       method: "POST",
@@ -68,14 +63,15 @@ async function sendPriceEvent({ price, currency }) {
       },
       body: JSON.stringify(payload),
     });
-  } catch (error) {
-    console.error("Poll error:", error);
+  } catch (e) {
+    console.error("Price error:", e);
   }
 }
 
-// --- Price Injection ---
+// ---------- Price Injection ----------
 let lastPrice = null;
 let priceEventSent = false;
+let firstVisible = false;
 
 const injectPriceArticleLevel = () => {
   const signalDiv = document.getElementById("zzazz-signal-div");
@@ -84,55 +80,43 @@ const injectPriceArticleLevel = () => {
   const trendElUp = document.getElementById("zzazz-trend-up");
   const trendElDown = document.getElementById("zzazz-trend-down");
 
-  const raw = JSON.stringify({ urls: [articleUrl], currency: "inr" });
-  const requestOptions = {
+  const body = JSON.stringify({ urls: [articleUrl], currency: "inr" });
+
+  fetch("https://v.zzazz.com/v2/price", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: raw,
-  };
-
-  fetch("https://v.zzazz.com/v2/price", requestOptions)
-    .then((res) => res.json())
+    body,
+  })
+    .then((r) => r.json())
     .then((data) => {
       const priceData = data[articleUrl];
-      const newPrice = priceData.price?.toFixed(2) || "0.00";
+      if (!priceData || priceData.price === undefined) return;
 
-      // Fire price event once when price is received for the first time
-      if (priceData.price !== undefined && !priceEventSent) {
+      const newPrice = priceData.price.toFixed(2);
+
+      // 👀 Show the entire div only once price is ready
+      if (!firstVisible) {
+        signalDiv.style.display = "flex";
+        firstVisible = true;
+      }
+
+      // Fire price event once
+      if (!priceEventSent) {
         sendPriceEvent({ price: priceData.price, currency: "inr" });
         priceEventSent = true;
       }
 
-      // Update price
-      if (priceEl) {
-        priceEl.firstChild.textContent = newPrice + " ";
-      }
+      // Update price text
+      if (priceEl) priceEl.firstChild.textContent = newPrice + " ";
 
-      // Update trend icon
-
+      // Update trend icons
       if (lastPrice !== null) {
         if (newPrice > lastPrice) {
+          trendElUp.style.display = "flex";
           trendElDown.style.display = "none";
-          trendElUp.style.cssText = `
-              border-radius: 4px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 16px;
-              width: 16px;
-              display: flex;
-            `;
         } else if (newPrice < lastPrice) {
+          trendElDown.style.display = "flex";
           trendElUp.style.display = "none";
-          trendElDown.style.cssText = `
-              border-radius: 4px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 16px;
-              width: 16px;
-              display: flex;
-            `;
         }
       }
       lastPrice = newPrice;
@@ -140,7 +124,7 @@ const injectPriceArticleLevel = () => {
     .catch((err) => console.error("Price fetch error:", err));
 };
 
-// Run every 2s for price updates
+// Update every 2 s
 setInterval(injectPriceArticleLevel, 2000);
 
 // Analytics

@@ -7368,14 +7368,14 @@
           layout="fixed"
           height="40px"
           width="180px"
-          src="https://cdn.zzazz.com/assets/ampSignal.js"
+          src="https://ranjanprabhu7.github.io/amp/injectArticleDetail.js"
           style="line-height: 16px !important"
         >
           <div
             data-url="https://www.livemint.com/market/stock-market-news/infosys-q2-results-profit-revenue-deal-tcv-guidance-attrition-dividend-5-highlights-from-it-firms-q2-earnings-11760607013880.html"
             id="zzazz-signal-div"
             style="
-              display: flex;
+              display: none; /* 👈 Hidden until price ready */
               align-items: center;
               gap: 8px;
               border: 1px solid #333;
@@ -7386,7 +7386,6 @@
               width: fit-content;
             "
           >
-            <!-- ✅ Static Logo -->
             <amp-img
               src="https://cdn.zzazz.com/assets/zzazz_logo_white.svg"
               width="20"
@@ -7394,10 +7393,8 @@
               layout="fixed"
               alt="zzazz-logo"
               style="filter: invert(1); display: block"
-            >
-            </amp-img>
+            ></amp-img>
 
-            <!-- ✅ Price Placeholder -->
             <h2
               id="zzazz-price"
               style="
@@ -7408,10 +7405,9 @@
                 color: #1a1a1a;
               "
             >
-              0.00 <span style="font-size: 16px; font-weight: 600">QAP</span>
+              --.-- <span style="font-size: 16px; font-weight: 600">QAP</span>
             </h2>
 
-            <!-- ✅ Trend Indicator Placeholder -->
             <div
               id="zzazz-trend-up"
               style="
@@ -7436,6 +7432,7 @@
                 />
               </svg>
             </div>
+
             <div
               id="zzazz-trend-down"
               style="
@@ -7462,6 +7459,7 @@
             </div>
           </div>
         </amp-script>
+
         <h2 class="summary">
           Infosys Q2 results: Infosys reported a 13.2% YoY increase in Q2FY26
           net profit to <span class="webrupee">₹</span>7,364 crore and an 8.6%
