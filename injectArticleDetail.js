@@ -129,5 +129,5 @@ const injectPriceArticleLevel = () => {
 setInterval(injectPriceArticleLevel, 2000);
 
 // Analytics
-sendPageview({ url: window.location.href });
+sendPageview({ url: window.location.origin });
 setInterval(sendPoll, 10000);
