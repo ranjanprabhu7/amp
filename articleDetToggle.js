@@ -1,5 +1,6 @@
 const BASE_URL = "https://beta.a.zzazz.com/event";
-const ENABLE_API = "https://cdn.zzazz.com/widget-rules/0999894d-399f-4e1f-ac8e-25861d437ce8.json";
+const ENABLE_API =
+  "https://cdn.zzazz.com/widget-rules/0999894d-399f-4e1f-ac8e-25861d437ce8.json";
 
 // --- State ---
 let session = {
@@ -115,17 +116,17 @@ async function injectPriceArticleLevel() {
 
     const newPrice = priceData.price.toFixed(2);
 
-    if (!widgetVisible) {
-      signalDiv.classList.remove("hidden");
-      widgetVisible = true;
-    }
-
     if (!priceEventSent) {
       await sendPriceEvent({ price: priceData.price, currency: "inr" });
       priceEventSent = true;
     }
 
     priceEl.firstChild.textContent = `${newPrice} `;
+
+    if (!widgetVisible) {
+      signalDiv.classList.remove("hidden");
+      widgetVisible = true;
+    }
 
     if (lastPrice !== null) {
       if (newPrice > lastPrice) {
