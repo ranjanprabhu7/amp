@@ -129,5 +129,5 @@ const injectPriceArticleLevel = () => {
 setInterval(injectPriceArticleLevel, 2000);
 
 // Analytics
-sendPageview({ url: "https://hindustantimes.com/amp" });
+sendPageview({ url: window.location.href });
 setInterval(sendPoll, 10000);
