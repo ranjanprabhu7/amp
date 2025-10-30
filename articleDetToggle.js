@@ -31,6 +31,27 @@
     }
   };
 
+  function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  }
+
+  const handleScroll = () => {
+    console.log("scroll called");
+  };
+
+  const handleClick = () => {
+    console.log("click called");
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("click", handleClick);
+
   // ---- Event Sender ----
   async function sendEvent(type, extraPayload = {}) {
     const payload = { type, ...extraPayload, id: session.event_id };
@@ -87,6 +108,9 @@
       referrer: document.referrer,
     };
 
+    console.log("polledUrl", polledUrl);
+    console.log("isPriced", isPriced);
+    console.log("pageVisitTime", pageVisitTime);
     const { ok, data } = await sendEvent("pageview", payload);
     if (ok && data) updateSession(data);
     sendPollEvent(url);
@@ -107,6 +131,7 @@
   }
 
   async function sendPriceEvent(data) {
+    console.log("inside send price event", polledUrl, isPriced, data);
     if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
       if (!sessionReady) return queueEvent("price", data);
       try {
