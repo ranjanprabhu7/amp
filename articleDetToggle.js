@@ -80,8 +80,8 @@
     const payload = {
       browser: getDeviceDimensions(),
       device: {
-        width: window.screen.width,
-        height: window.screen.height,
+        width: window?.screen?.width || 0,
+        height: window?.screen?.height || 0,
       },
       url: url,
       referrer: document.referrer,
