@@ -1,167 +1,195 @@
-const BASE_URL = "https://beta.a.zzazz.com/event";
-const ENABLE_API =
-  "https://cdn.zzazz.com/widget-rules/0999894d-399f-4e1f-ac8e-25861d437ce8.json";
-
-// --- State ---
-let session = {
-  user_id: localStorage.getItem("user_id") || null,
-  event_id: localStorage.getItem("event_id") || null,
-};
-
-// --- Utils ---
-function getDeviceDimensions() {
-  return {
-    width: window.innerWidth || document.documentElement.clientWidth,
-    height: window.innerHeight || document.documentElement.clientHeight,
-  };
-}
-
-function updateSession({ user_id, event_id }) {
-  if (user_id) {
-    session.user_id = user_id;
-    localStorage.setItem("user_id", user_id);
-  }
-  if (event_id) {
-    session.event_id = event_id;
-    localStorage.setItem("event_id", event_id);
-  }
-}
-
-// --- Generic Event Sender ---
-async function sendEvent(type, extraPayload = {}) {
-  const payload = { type, ...extraPayload };
-  const headers = {
-    "Content-Type": "application/json",
-    ...(session.user_id && { "user-id": session.user_id }),
-  };
-
-  try {
-    const res = await fetch(BASE_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) throw new Error(`Event ${type} failed (${res.status})`);
-
-    const json = await res.json();
-
-    // Only pageview returns new IDs
-    if (json.user_id || json.event_id) {
-      updateSession(json);
-    }
-
-    return json;
-  } catch (err) {
-    console.error(`${type} event error:`, err);
-  }
-}
-
-// --- Specific Event Wrappers ---
-async function sendPageViewEvent(url) {
-  const device = getDeviceDimensions();
-  return await sendEvent("pageview", { url, device });
-}
-
-async function sendPollEvent() {
-  if (!session.event_id) return;
-  return await sendEvent("poll", { id: session.event_id });
-}
-
-async function sendPriceEvent({ price, currency }) {
-  if (!session.event_id) return;
-  return await sendEvent("price", { id: session.event_id, price, currency });
-}
-
-// --- Enable / Disable ---
-async function isPillEnabled() {
-  try {
-    const res = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
-    const data = await res.json();
-    return data.showWidget === true;
-  } catch (err) {
-    console.error("Enable API error:", err);
-    return false;
-  }
-}
-
-// --- Price Injection ---
-let lastPrice = null;
-let priceEventSent = false;
-let widgetVisible = false;
-
-async function injectPriceArticleLevel() {
+(async function bootstrapPriceWidget() {
+  // ---- Local State ----
   const signalDiv = document.getElementById("zzazz-signal-div");
-  const articleUrl = signalDiv?.getAttribute("data-url");
-  if (!signalDiv || !articleUrl) return;
+  const trackingId = signalDiv?.getAttribute("data-tracking-id");
+  const BASE_URL = "https://beta.a.zzazz.com/event";
+  const ENABLE_API = `https://cdn.zzazz.com/widget-rules/${trackingId}.json`;
 
-  const priceEl = document.getElementById("zzazz-price");
-  const trendElUp = document.getElementById("zzazz-trend-up");
-  const trendElDown = document.getElementById("zzazz-trend-down");
+  let session = { user_id: null, event_id: null };
+  let eventQueue = [];
+  let sessionReady = false;
+  let flushing = false;
+  let lastPrice = null;
+  let widgetVisible = false;
+  let pollTimeOut = null;
+  let polledUrl = null;
+  let pageVisitTime = null;
+  let isPriced = false;
 
-  try {
-    const res = await fetch("https://v.zzazz.com/v2/price", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls: [articleUrl], currency: "inr" }),
-    });
-    const data = await res.json();
-    const priceData = data[articleUrl];
+  // ---- Utils ----
+  const getDeviceDimensions = () => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
-    if (!priceData || priceData.price == null || isNaN(priceData.price)) {
-      signalDiv.classList.add("hidden");
-      widgetVisible = false;
-      return;
+  const updateSession = ({ user_id, event_id }) => {
+    if (user_id && !session.user_id) session.user_id = user_id;
+    if (event_id && !session.event_id) {
+      session.event_id = event_id;
+      sessionReady = true;
+      flushEventQueue();
     }
+  };
 
-    const newPrice = priceData.price.toFixed(2);
+  // ---- Event Sender ----
+  async function sendEvent(type, extraPayload = {}) {
+    const payload = { type, ...extraPayload, id: session.event_id };
+    const headers = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "tracking-id": `${trackingId}`,
+      ...(session.user_id && { "user-id": session.user_id }),
+    };
 
-    if (!priceEventSent) {
-      await sendPriceEvent({ price: priceData.price, currency: "inr" });
-      priceEventSent = true;
+    try {
+      const res = await fetch(BASE_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => null);
+      return { ok: res.ok, data };
+    } catch (err) {
+      console.error(`Failed to send event ${type}:`, err);
+      return { ok: false, data: null };
     }
+  }
 
-    priceEl.firstChild.textContent = `${newPrice} `;
+  // ---- Queue ----
+  function queueEvent(type, payload = {}) {
+    eventQueue.push({ type, payload });
+    flushEventQueue();
+  }
 
-    if (!widgetVisible) {
-      signalDiv.classList.remove("hidden");
-      widgetVisible = true;
+  async function flushEventQueue() {
+    if (!sessionReady || flushing) return;
+    flushing = true;
+    while (eventQueue.length) {
+      const { type, payload } = eventQueue.shift();
+      await sendEvent(type, payload);
     }
+    flushing = false;
+  }
 
-    if (lastPrice !== null) {
-      if (newPrice > lastPrice) {
-        trendElUp.style.display = "flex";
-        trendElDown.style.display = "none";
-      } else if (newPrice < lastPrice) {
-        trendElDown.style.display = "flex";
-        trendElUp.style.display = "none";
+  // ---- Event Wrappers ----
+  async function sendPageViewEvent(url) {
+    clearTimeout(pollTimeOut);
+    polledUrl = url;
+    isPriced = false;
+    pageVisitTime = new Date().getTime();
+    const payload = {
+      browser: getDeviceDimensions(),
+      device: {
+        width: window.screen.width,
+        height: window.screen.height,
+      },
+      url: url,
+      referrer: document.referrer,
+    };
+
+    const { ok, data } = await sendEvent("pageview", payload);
+    if (ok && data) updateSession(data);
+    sendPollEvent(url);
+  }
+
+  async function sendPollEvent(url) {
+    if (url === polledUrl) {
+      let waitTime =
+        new Date().getTime() - pageVisitTime > 600000 ? 60000 : 5000;
+      try {
+        await sendEvent("poll");
+      } catch (err) {
+        console.error(err);
+      } finally {
+        pollTimeOut = setTimeout(() => sendPollEvent(url), waitTime);
       }
     }
-
-    lastPrice = newPrice;
-  } catch (err) {
-    console.error("Price fetch error:", err);
-    signalDiv.classList.add("hidden");
   }
-}
 
-// --- Bootstrap ---
-(async function init() {
+  async function sendPriceEvent(data) {
+    if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
+      if (!sessionReady) return queueEvent("price", data);
+      try {
+        await sendEvent("price", data);
+        isPriced = true;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
+
+  // ---- Remote Enable ----
+  async function isPillEnabled() {
+    try {
+      const res = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
+      const data = await res.json();
+      return data.showWidget === true;
+    } catch (err) {
+      console.error("Enable API error:", err);
+      return false;
+    }
+  }
+
+  // ---- Price Logic ----
+  async function injectPriceArticleLevel() {
+    const articleUrl = signalDiv?.getAttribute("data-url");
+    if (!articleUrl) return;
+
+    try {
+      const res = await fetch("https://v.zzazz.com/v2/price", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: [articleUrl], currency: "inr" }),
+      });
+
+      const data = await res.json();
+      const priceData = data[articleUrl];
+
+      if (!priceData || isNaN(priceData.price)) {
+        signalDiv.classList.add("hidden");
+        widgetVisible = false;
+        return;
+      }
+
+      const price = priceData.price.toFixed(2);
+      sendPriceEvent({
+        url: articleUrl,
+        price: priceData.price,
+        currency: "inr",
+      });
+
+      const priceEl = document.getElementById("zzazz-price");
+      const trendElUp = document.getElementById("zzazz-trend-up");
+      const trendElDown = document.getElementById("zzazz-trend-down");
+
+      priceEl.firstChild.textContent = `${price} `;
+
+      if (!widgetVisible) {
+        signalDiv.classList.remove("hidden");
+        widgetVisible = true;
+      }
+
+      if (lastPrice !== null) {
+        trendElUp.style.display = price > lastPrice ? "flex" : "none";
+        trendElDown.style.display = price < lastPrice ? "flex" : "none";
+      }
+      lastPrice = price;
+    } catch (err) {
+      console.error("Price fetch error:", err);
+      signalDiv.classList.add("hidden");
+    }
+  }
+
+  // ---- Bootstrap ----
   const enabled = await isPillEnabled();
-  const signalDiv = document.getElementById("zzazz-signal-div");
-
   if (!enabled) {
     console.warn("Price pill disabled remotely.");
-    if (signalDiv) signalDiv.classList.add("hidden");
+    signalDiv?.classList.add("hidden");
     return;
   }
 
   console.log("Price pill enabled by remote rules.");
-
-  // ✅ Wait for pageview event to finish before starting others
-  await sendPageViewEvent(window.location.href);
-
-  // Start polling only after IDs are confirmed
-  setInterval(sendPollEvent, 5000);
+  sendPageViewEvent(window.location.href);
+  injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
