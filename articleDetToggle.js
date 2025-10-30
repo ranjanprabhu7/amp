@@ -4,6 +4,7 @@
   const trackingId = signalDiv?.getAttribute("zzazz-t-id");
   const BASE_URL = "https://beta.a.zzazz.com/event";
   const ENABLE_API = `https://cdn.zzazz.com/widget-rules/${trackingId}.json`;
+  const PRICE_API = "https://beta.v.zzazz.com/v3/price";
 
   let session = { user_id: null, event_id: null };
   let eventQueue = [];
@@ -17,9 +18,14 @@
   let isPriced = false;
 
   // ---- Utils ----
+  const getBrowserDimensions = () => ({
+    width: window?.innerWidth || 0,
+    height: window?.innerHeight || 0,
+  });
+
   const getDeviceDimensions = () => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: window?.screen?.width || 0,
+    height: window?.screen?.height || 0,
   });
 
   const updateSession = ({ user_id, event_id }) => {
@@ -41,20 +47,25 @@
     };
   }
 
-  const handleScroll = () => {
-    console.log("scroll called");
-  };
+  const handleScroll = debounce(() => {
+    sendScrollEvent();
+  }, 500);
 
-  const handleClick = () => {
-    console.log("click called");
-  };
+  const handleClick = debounce((e) => {
+    sendClickEvent(e);
+  }, 500);
 
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("click", handleClick);
 
   // ---- Event Sender ----
   async function sendEvent(type, extraPayload = {}) {
-    const payload = { type, ...extraPayload, id: session.event_id };
+    const payload = {
+      type,
+      ...extraPayload,
+      id: session.event_id,
+      pageId: session.event_id,
+    };
     const headers = {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -65,6 +76,7 @@
     try {
       const res = await fetch(BASE_URL, {
         method: "POST",
+        credentials: "include",
         headers,
         body: JSON.stringify(payload),
       });
@@ -99,11 +111,8 @@
     isPriced = false;
     pageVisitTime = new Date().getTime();
     const payload = {
-      browser: getDeviceDimensions(),
-      device: {
-        width: window?.screen?.width || 0,
-        height: window?.screen?.height || 0,
-      },
+      browser: getBrowserDimensions(),
+      device: getDeviceDimensions(),
       url: url,
       referrer: document.referrer,
     };
@@ -132,7 +141,8 @@
 
   async function sendPriceEvent(data) {
     console.log("inside send price event", polledUrl, isPriced, data);
-    if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
+    // if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
+    if (!isPriced) {
       if (!sessionReady) return queueEvent("price", data);
       try {
         await sendEvent("price", data);
@@ -141,6 +151,69 @@
         console.log(err);
       }
     }
+  }
+
+  async function sendScrollEvent() {
+    // if (window.location.href === this.polledUrl) {
+    try {
+      console.log("scroll event pos", window?.scrollY);
+      const payload = {
+        scrollPosition: window?.scrollY || 0,
+        browser: getBrowserDimensions(),
+        device: getDeviceDimensions(),
+      };
+      await sendEvent("scroll", payload);
+    } catch (err) {
+      console.log(err);
+    }
+    // }
+  }
+
+  function getElementUrl(el) {
+    console.log("getting element url for", el);
+    if (!el) return null;
+
+    if (el.tagName === "A" && el.href) return el.href;
+    if (el.tagName === "BUTTON" && el.formAction) return el.formAction;
+    if (el.tagName === "BUTTON" && el.getAttribute("data-url"))
+      return el.getAttribute("data-url");
+
+    // Manual fallback for closest()
+    let parent = el.parentNode;
+    while (parent) {
+      const tag = parent.tagName;
+      if (tag === "A" && parent.href) return parent.href;
+      if (tag === "BUTTON" && parent.formAction) return parent.formAction;
+      if (tag === "BUTTON" && parent.getAttribute("data-url"))
+        return parent.getAttribute("data-url");
+      parent = parent.parentNode;
+    }
+
+    return null;
+  }
+
+  async function sendClickEvent(event) {
+    console.log("click event called", event);
+    // if (window.location.href === this.polledUrl) {
+    try {
+      const clickedEl = event?.target;
+      const payload = {
+        browser: getBrowserDimensions(),
+        device: getDeviceDimensions(),
+        element: {
+          tag: clickedEl?.tagName?.toLowerCase() || null,
+          url: getElementUrl(clickedEl) || null,
+          position: {
+            x: event?.pageX || 0,
+            y: event?.pageY || 0,
+          },
+        },
+      };
+      await sendEvent("click", payload);
+    } catch (err) {
+      console.log(err);
+    }
+    // }
   }
 
   // ---- Remote Enable ----
@@ -161,7 +234,7 @@
     if (!articleUrl) return;
 
     try {
-      const res = await fetch("https://v.zzazz.com/v2/price", {
+      const res = await fetch(`${PRICE_API}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ urls: [articleUrl], currency: "inr" }),
@@ -170,16 +243,16 @@
       const data = await res.json();
       const priceData = data[articleUrl];
 
-      if (!priceData || isNaN(priceData.price)) {
+      if (!priceData || isNaN(priceData.qap)) {
         signalDiv.classList.add("hidden");
         widgetVisible = false;
         return;
       }
 
-      const price = priceData.price.toFixed(2);
+      const price = priceData.qap.toFixed(2);
       sendPriceEvent({
         url: articleUrl,
-        price: priceData.price,
+        price: priceData.qap,
         currency: "inr",
       });
 
