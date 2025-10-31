@@ -144,6 +144,7 @@
   // ---- Price Logic ----
   async function injectPriceArticleLevel() {
     const articleUrl = signalDiv?.getAttribute("data-url");
+    console.log("Article URL:", articleUrl);
     if (!articleUrl) return;
 
     try {
