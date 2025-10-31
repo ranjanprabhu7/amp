@@ -238,8 +238,8 @@
 
       if (!priceData || isNaN(priceData.qap)) {
         // signalDiv.classList.add("hidden");
-        signalDiv.style.opacity = "0";
-        signalDiv.style.visibility = "hidden";
+        // signalDiv.style.opacity = "0";
+        // signalDiv.style.visibility = "hidden";
         widgetVisible = false;
         return;
       }
@@ -259,8 +259,8 @@
 
       if (!widgetVisible) {
         // signalDiv.classList.remove("hidden");
-        signalDiv.style.opacity = "1";
-        signalDiv.style.visibility = "visible";
+        // signalDiv.style.opacity = "1";
+        // signalDiv.style.visibility = "visible";
         widgetVisible = true;
       }
 
@@ -272,8 +272,8 @@
     } catch (err) {
       console.error("Price fetch error:", err);
       // signalDiv.classList.add("hidden");
-      signalDiv.style.opacity = "0";
-      signalDiv.style.visibility = "hidden";
+      // signalDiv.style.opacity = "0";
+      // signalDiv.style.visibility = "hidden";
     }
   }
 
@@ -282,8 +282,8 @@
   if (!enabled) {
     console.warn("Price pill disabled remotely.");
     // signalDiv?.classList.add("hidden");
-    signalDiv.style.opacity = "0";
-    signalDiv.style.visibility = "hidden";
+    // signalDiv.style.opacity = "0";
+    // signalDiv.style.visibility = "hidden";
     return;
   }
 
