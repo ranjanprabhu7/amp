@@ -261,7 +261,7 @@
       }
 
       if (lastPrice !== null) {
-        trendElUp.style.display = price > lastPrice ? "flex" : "none";
+        trendElUp.style.display = price >= lastPrice ? "flex" : "none";
         trendElDown.style.display = price < lastPrice ? "flex" : "none";
       }
       lastPrice = price;
