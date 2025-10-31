@@ -160,9 +160,6 @@
       const priceData = data[articleUrl];
 
       if (!priceData || isNaN(priceData.qap)) {
-        // signalDiv.classList.add("hidden");
-        // signalDiv.style.opacity = "0";
-        // signalDiv.style.visibility = "hidden";
         widgetVisible = false;
         return;
       }
@@ -178,7 +175,6 @@
       const trendElUp = doc.getElementById("zzazz-trend-up");
       const trendElDown = doc.getElementById("zzazz-trend-down");
 
-      // priceEl.firstChild.textContent = `${price} `;
       priceEl.textContent = `${price} `;
       const unitSpan = doc.createElement("span");
       unitSpan.style.fontSize = "16px";
@@ -187,9 +183,7 @@
       priceEl.appendChild(unitSpan);
 
       if (!widgetVisible) {
-        // signalDiv.classList.remove("hidden");
-        // signalDiv.style.opacity = "1";
-        // signalDiv.style.visibility = "visible";
+
         widgetVisible = true;
       }
 
@@ -200,9 +194,7 @@
       lastPrice = price;
     } catch (err) {
       console.error("Price fetch error:", err);
-      // signalDiv.classList.add("hidden");
-      // signalDiv.style.opacity = "0";
-      // signalDiv.style.visibility = "hidden";
+
     }
   }
 
@@ -210,14 +202,10 @@
   const enabled = await isPillEnabled();
   if (!enabled) {
     console.warn("Price pill disabled remotely.");
-    // signalDiv?.classList.add("hidden");
-    // signalDiv.style.opacity = "0";
-    // signalDiv.style.visibility = "hidden";
     return;
   }
 
   console.log("Price pill enabled by remote rules.");
-  // sendPageViewEvent(window.location.origin);
   injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
