@@ -18,6 +18,13 @@
   let pageVisitTime = null;
   let isPriced = false;
 
+  function debug(msg) {
+    const dbg = self.document.getElementById("debug");
+    if (dbg) {
+      dbg.textContent += "\n" + msg;
+    }
+  }
+
   // ---- Utils ----
   const getBrowserDimensions = () => ({
     width: window?.innerWidth || 0,
@@ -124,7 +131,7 @@
         await sendEvent("price", data);
         isPriced = true;
       } catch (err) {
-        console.log(err);
+        debug(err);
       }
     }
   }
@@ -144,7 +151,7 @@
   // ---- Price Logic ----
   async function injectPriceArticleLevel() {
     const articleUrl = signalDiv?.getAttribute("data-url");
-    console.log("Article URL:", articleUrl);
+    debug("Article URL:", articleUrl);
     if (!articleUrl) return;
 
     try {
@@ -155,7 +162,7 @@
       });
 
       const data = await res.json();
-      console.log("Price API response:", data);
+      debug("Price API response:", data);
 
       const priceData = data[articleUrl];
 
@@ -183,7 +190,6 @@
       priceEl.appendChild(unitSpan);
 
       if (!widgetVisible) {
-
         widgetVisible = true;
       }
 
@@ -194,7 +200,6 @@
       lastPrice = price;
     } catch (err) {
       console.error("Price fetch error:", err);
-
     }
   }
 
@@ -205,7 +210,7 @@
     return;
   }
 
-  console.log("Price pill enabled by remote rules.");
+  debug("Price pill enabled by remote rules.");
   injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
