@@ -117,9 +117,6 @@
       referrer: document.referrer,
     };
 
-    console.log("polledUrl", polledUrl);
-    console.log("isPriced", isPriced);
-    console.log("pageVisitTime", pageVisitTime);
     const { ok, data } = await sendEvent("pageview", payload);
     if (ok && data) updateSession(data);
     sendPollEvent(url);
@@ -140,7 +137,6 @@
   }
 
   async function sendPriceEvent(data) {
-    console.log("inside send price event", polledUrl, isPriced, data);
     // if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
     if (!isPriced) {
       if (!sessionReady) return queueEvent("price", data);
@@ -156,7 +152,6 @@
   async function sendScrollEvent() {
     // if (window.location.href === this.polledUrl) {
     try {
-      console.log("scroll event pos", window?.scrollY);
       const payload = {
         scrollPosition: window?.scrollY || 0,
         browser: getBrowserDimensions(),
@@ -170,7 +165,6 @@
   }
 
   function getElementUrl(el) {
-    console.log("getting element url for", el);
     if (!el) return null;
 
     if (el.tagName === "A" && el.href) return el.href;
@@ -193,7 +187,6 @@
   }
 
   async function sendClickEvent(event) {
-    console.log("click event called", event);
     // if (window.location.href === this.polledUrl) {
     try {
       const clickedEl = event?.target;
