@@ -55,8 +55,8 @@
     sendClickEvent(e);
   }, 500);
 
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("click", handleClick);
+  // window.addEventListener("scroll", handleScroll);
+  // window.addEventListener("click", handleClick);
 
   // ---- Event Sender ----
   async function sendEvent(type, extraPayload = {}) {
