@@ -1,6 +1,7 @@
 (async function bootstrapPriceWidget() {
   // ---- Local State ----
-  const signalDiv = document.getElementById("zzazz-signal-div");
+  const doc = self.document;
+  const signalDiv = doc.getElementById("zzazz-signal-div");
   const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
   const BASE_URL = "https://beta.a.zzazz.com/event";
   const ENABLE_API = `https://cdn.zzazz.com/widget-rules/${trackingId}.json`;
@@ -36,27 +37,6 @@
       flushEventQueue();
     }
   };
-
-  function debounce(func, delay) {
-    let timeoutId;
-    return function (...args) {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func.apply(this, args);
-      }, delay);
-    };
-  }
-
-  const handleScroll = debounce(() => {
-    sendScrollEvent();
-  }, 500);
-
-  const handleClick = debounce((e) => {
-    sendClickEvent(e);
-  }, 500);
-
-  // window.addEventListener("scroll", handleScroll);
-  // window.addEventListener("click", handleClick);
 
   // ---- Event Sender ----
   async function sendEvent(type, extraPayload = {}) {
@@ -114,7 +94,7 @@
       browser: getBrowserDimensions(),
       device: getDeviceDimensions(),
       url: url,
-      referrer: document.referrer,
+      referrer: doc.referrer,
     };
 
     const { ok, data } = await sendEvent("pageview", payload);
@@ -147,66 +127,6 @@
         console.log(err);
       }
     }
-  }
-
-  async function sendScrollEvent() {
-    // if (window.location.href === this.polledUrl) {
-    try {
-      const payload = {
-        scrollPosition: window?.scrollY || 0,
-        browser: getBrowserDimensions(),
-        device: getDeviceDimensions(),
-      };
-      await sendEvent("scroll", payload);
-    } catch (err) {
-      console.log(err);
-    }
-    // }
-  }
-
-  function getElementUrl(el) {
-    if (!el) return null;
-
-    if (el.tagName === "A" && el.href) return el.href;
-    if (el.tagName === "BUTTON" && el.formAction) return el.formAction;
-    if (el.tagName === "BUTTON" && el.getAttribute("data-url"))
-      return el.getAttribute("data-url");
-
-    // Manual fallback for closest()
-    let parent = el.parentNode;
-    while (parent) {
-      const tag = parent.tagName;
-      if (tag === "A" && parent.href) return parent.href;
-      if (tag === "BUTTON" && parent.formAction) return parent.formAction;
-      if (tag === "BUTTON" && parent.getAttribute("data-url"))
-        return parent.getAttribute("data-url");
-      parent = parent.parentNode;
-    }
-
-    return null;
-  }
-
-  async function sendClickEvent(event) {
-    // if (window.location.href === this.polledUrl) {
-    try {
-      const clickedEl = event?.target;
-      const payload = {
-        browser: getBrowserDimensions(),
-        device: getDeviceDimensions(),
-        element: {
-          tag: clickedEl?.tagName?.toLowerCase() || null,
-          url: getElementUrl(clickedEl) || null,
-          position: {
-            x: event?.pageX || 0,
-            y: event?.pageY || 0,
-          },
-        },
-      };
-      await sendEvent("click", payload);
-    } catch (err) {
-      console.log(err);
-    }
-    // }
   }
 
   // ---- Remote Enable ----
@@ -251,9 +171,9 @@
         currency: "inr",
       });
 
-      const priceEl = document.getElementById("zzazz-price");
-      const trendElUp = document.getElementById("zzazz-trend-up");
-      const trendElDown = document.getElementById("zzazz-trend-down");
+      const priceEl = doc.getElementById("zzazz-price");
+      const trendElUp = doc.getElementById("zzazz-trend-up");
+      const trendElDown = doc.getElementById("zzazz-trend-down");
 
       priceEl.firstChild.textContent = `${price} `;
 
