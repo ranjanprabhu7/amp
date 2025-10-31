@@ -154,6 +154,8 @@
       });
 
       const data = await res.json();
+      console.log("Price API response:", data);
+
       const priceData = data[articleUrl];
 
       if (!priceData || isNaN(priceData.qap)) {
@@ -175,7 +177,13 @@
       const trendElUp = doc.getElementById("zzazz-trend-up");
       const trendElDown = doc.getElementById("zzazz-trend-down");
 
-      priceEl.firstChild.textContent = `${price} `;
+      // priceEl.firstChild.textContent = `${price} `;
+      priceEl.textContent = `${price} `;
+      const unitSpan = doc.createElement("span");
+      unitSpan.style.fontSize = "16px";
+      unitSpan.style.fontWeight = "600";
+      unitSpan.textContent = "QAP";
+      priceEl.appendChild(unitSpan);
 
       if (!widgetVisible) {
         // signalDiv.classList.remove("hidden");
@@ -208,7 +216,7 @@
   }
 
   console.log("Price pill enabled by remote rules.");
-  sendPageViewEvent(window.location.origin);
+  // sendPageViewEvent(window.location.origin);
   injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
