@@ -21,7 +21,7 @@
   function debug(msg) {
     const dbg = self.document.getElementById("debug");
     if (dbg) {
-      dbg.textContent += "\n" + msg;
+      dbg.textContent += "\n \n \n" + msg;
     }
   }
 
@@ -55,28 +55,33 @@
 
       const priceData = data[articleUrl];
 
-      if (!priceData || isNaN(priceData.qap)) {
+      // Check if valid price data exists
+      if (
+        !priceData ||
+        typeof priceData.qap !== "number" ||
+        isNaN(priceData.qap)
+      ) {
         widgetVisible = false;
         return;
       }
-
-      const price = priceData.qap.toFixed(2);
-      sendPriceEvent({
-        url: articleUrl,
-        price: priceData.qap,
-        currency: "inr",
-      });
 
       const priceEl = doc.getElementById("zzazz-price");
       const trendElUp = doc.getElementById("zzazz-trend-up");
       const trendElDown = doc.getElementById("zzazz-trend-down");
 
-      priceEl.textContent = `${price} `;
-      const unitSpan = doc.createElement("span");
-      unitSpan.style.fontSize = "16px";
-      unitSpan.style.fontWeight = "600";
-      unitSpan.textContent = "QAP";
-      priceEl.appendChild(unitSpan);
+      const price = priceData.qap.toFixed(2);
+
+      debug(`Fetched Price: ${price}`);
+
+      // Update DOM safely
+      const priceSpans = priceEl.querySelectorAll("span");
+      if (priceSpans.length >= 2) {
+        // Update the first span (price)
+        priceSpans[0].textContent = `${price} `;
+        // Keep the second span (QAP) unchanged
+      }
+
+      debug(`Updated span 0: ${price}`);
 
       if (!widgetVisible) {
         widgetVisible = true;
