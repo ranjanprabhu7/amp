@@ -1,148 +1,152 @@
-const BASE_URL = "https://beta.a.zzazz.com/event";
+(() => {
+  // ---- Base URL ----
+  var BASE_URL = "https://beta.a.zzazz.com/event";
 
-function getDeviceDimensions() {
-  return {
-    width: window.innerWidth || document.documentElement.clientWidth,
-    height: window.innerHeight || document.documentElement.clientHeight,
-  };
-}
-
-// --- Analytics Calls ---
-async function sendPageview({ url }) {
-  const device = getDeviceDimensions();
-  const user_id = localStorage.getItem("user_id") || "";
-
-  const payload = {
-    url: url || "",
-    device,
-    type: "pageview",
-  };
-
-  try {
-    const response = await fetch(BASE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(user_id && { "user-id": user_id }),
-      },
-      body: JSON.stringify(payload),
-    });
-    const json = await response.json();
-    localStorage.setItem("user_id", json.user_id);
-    localStorage.setItem("event_id", json.event_id);
-  } catch (error) {
-    console.error("Pageview error:", error);
+  // ---- Device Info ----
+  function getDeviceDimensions() {
+    return {
+      width: window.innerWidth || document.documentElement.clientWidth,
+      height: window.innerHeight || document.documentElement.clientHeight,
+    };
   }
-}
 
-async function sendPoll() {
-  const user_id = localStorage.getItem("user_id") || "TEST_ID";
-  const event_id = localStorage.getItem("event_id") || "TEST_ID";
+  // ---- Pageview Event ----
+  async function sendPageview({ url }) {
+    let device = getDeviceDimensions();
+    let userId = localStorage.getItem("user_id") || "";
 
-  const payload = { type: "poll", id: event_id };
-  try {
-    await fetch(BASE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "user-id": user_id,
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error("Poll error:", error);
+    let payload = {
+      url,
+      device,
+      type: "pageview",
+    };
+
+    try {
+      let response = await fetch(BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(userId && { "user-id": userId }),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let data = await response.json();
+      localStorage.setItem("user_id", data.user_id);
+      localStorage.setItem("event_id", data.event_id);
+    } catch (err) {
+      console.error("Pageview error:", err);
+    }
   }
-}
 
-async function sendPriceEvent({ price, currency }) {
-  const user_id = localStorage.getItem("user_id") || "TEST_ID";
-  const event_id = localStorage.getItem("event_id") || "TEST_ID";
+  // ---- Poll Event ----
+  async function sendPoll() {
+    let userId = localStorage.getItem("user_id") || "TEST_ID";
+    let payload = {
+      type: "poll",
+      id: localStorage.getItem("event_id") || "TEST_ID",
+    };
 
-  const payload = { type: "price", id: event_id, price, currency };
-  try {
-    await fetch(BASE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "user-id": user_id,
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error("Poll error:", error);
+    try {
+      await fetch(BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "user-id": userId,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Poll error:", err);
+    }
   }
-}
 
-// --- Price Injection ---
-let lastPrice = null;
-let priceEventSent = false;
+  // ---- Price Event ----
+  async function sendPriceEvent({ price, currency }) {
+    let userId = localStorage.getItem("user_id") || "TEST_ID";
+    let payload = {
+      type: "price",
+      id: localStorage.getItem("event_id") || "TEST_ID",
+      price,
+      currency,
+    };
 
-const injectPriceArticleLevel = () => {
-  const signalDiv = document.getElementById("zzazz-signal-div");
-  const articleUrl = signalDiv.getAttribute("data-url");
-  const priceEl = document.getElementById("zzazz-price");
-  const trendElUp = document.getElementById("zzazz-trend-up");
-  const trendElDown = document.getElementById("zzazz-trend-down");
+    try {
+      await fetch(BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "user-id": userId,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Price event error:", err);
+    }
+  }
 
-  const raw = JSON.stringify({ urls: [articleUrl], currency: "inr" });
-  const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: raw,
-  };
+  // ---- Price Logic ----
+  var lastPrice = null;
+  var priceEventSent = false;
+  var widgetVisible = false;
 
-  fetch("https://v.zzazz.com/v2/price", requestOptions)
-    .then((res) => res.json())
-    .then((data) => {
-      const priceData = data[articleUrl];
-      const newPrice = priceData.price?.toFixed(2) || "0.00";
+  const fetchAndUpdatePrice = () => {
+    let signalDiv = document.getElementById("zzazz-signal-div");
+    let articleUrl = signalDiv.getAttribute("data-url");
+    let priceEl = document.getElementById("zzazz-price");
+    let trendUp = document.getElementById("zzazz-trend-up");
+    let trendDown = document.getElementById("zzazz-trend-down");
 
-      // Fire price event once when price is received for the first time
-      if (priceData.price !== undefined && !priceEventSent) {
-        sendPriceEvent({ price: priceData.price, currency: "inr" });
-        priceEventSent = true;
-      }
+    let requestBody = JSON.stringify({
+      urls: [articleUrl],
+      currency: "inr",
+    });
 
-      // Update price
-      if (priceEl) {
-        priceEl.firstChild.textContent = newPrice + " ";
-      }
-
-      // Update trend icon
-
-      if (lastPrice !== null) {
-        if (newPrice > lastPrice) {
-          trendElDown.style.display = "none";
-          trendElUp.style.cssText = `
-              border-radius: 4px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 16px;
-              width: 16px;
-              display: flex;
-            `;
-        } else if (newPrice < lastPrice) {
-          trendElUp.style.display = "none";
-          trendElDown.style.cssText = `
-              border-radius: 4px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              height: 16px;
-              width: 16px;
-              display: flex;
-            `;
-        }
-      }
-      lastPrice = newPrice;
+    fetch("https://v.zzazz.com/v2/price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: requestBody,
     })
-    .catch((err) => console.error("Price fetch error:", err));
-};
+      .then((res) => res.json())
+      .then((data) => {
+        let priceData = data[articleUrl];
+        if (!priceData || priceData.price === undefined) return;
 
-// Run every 2s for price updates
-setInterval(injectPriceArticleLevel, 4000);
+        let price = priceData.price.toFixed(2);
 
-// Analytics
-sendPageview({ url: "https://hindustantimes.com/amp" });
-setInterval(sendPoll, 10000);
+        // Make widget visible once
+        if (!widgetVisible) {
+          signalDiv.classList.remove("hidden");
+          widgetVisible = true;
+        }
+
+        // Send price event once
+        if (!priceEventSent) {
+          sendPriceEvent({ price: priceData.price, currency: "inr" });
+          priceEventSent = true;
+        }
+
+        // Update price in UI
+        priceEl.firstChild.textContent = price + " ";
+
+        // Handle trend direction
+        if (lastPrice !== null) {
+          if (price > lastPrice) {
+            trendUp.style.display = "flex";
+            trendDown.style.display = "none";
+          } else if (price < lastPrice) {
+            trendDown.style.display = "flex";
+            trendUp.style.display = "none";
+          }
+        }
+
+        lastPrice = price;
+      })
+      .catch((err) => console.error("Price fetch error:", err));
+  };
+
+  // ---- Timers ----
+  setInterval(fetchAndUpdatePrice, 2000);
+  sendPageview({ url: "https://hindustantimes.com/amp" });
+  setInterval(sendPoll, 10000);
+})();
