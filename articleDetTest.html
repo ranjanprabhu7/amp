@@ -15,7 +15,7 @@
     />
     <meta
       name="amp-script-src"
-      content="sha384-82KS32zcb9MbuG6GkqDI_DQ0TqenCZ7pc4RFv18eYF6HDo07ZEny2EVLLHKxcowJ"
+      content="sha384-rJp1VJLzGsFlkGc6lTRqDOfq72mkc5SUs2i1MMHuQbPJXUZdxO7-DR8F6bxFFJlt"
     />
     <link
       rel="preload"
@@ -7404,17 +7404,16 @@
           highlights
         </h1>
         <amp-script
+          data-ampdevmode
           layout="fixed"
-          height="1040px"
+          height="40px"
           width="180px"
-          src="https://ranjanprabhu7.github.io/amp/articleDetTest.js"
-          id="zzazz-js"
+          src="https://ranjanprabhu7.github.io/amp/injectArticleDetail.js"
         >
-           <div id="debug">------------</div>
           <div
             data-url="https://www.livemint.com/market/stock-market-news/infosys-q2-results-profit-revenue-deal-tcv-guidance-attrition-dividend-5-highlights-from-it-firms-q2-earnings-11760607013880.html"
             id="zzazz-signal-div"
-            data-zzazz-t-id="0999894d-399f-4e1f-ac8e-25861d437ce8"
+            class="hidden"
           >
             <!-- Logo -->
             <amp-img
@@ -7436,7 +7435,7 @@
 
             <!-- Price -->
             <h2 id="zzazz-price">
-             <span>--.-- </span> <span style="font-size: 16px; font-weight: 600">QAP</span>
+              --.-- <span style="font-size: 16px; font-weight: 600">QAP</span>
             </h2>
 
             <!-- Trend Up -->
@@ -7472,6 +7471,7 @@
             </div>
           </div>
         </amp-script>
+
         <h2 class="summary">
           Infosys Q2 results: Infosys reported a 13.2% YoY increase in Q2FY26
           net profit to <span class="webrupee">₹</span>7,364 crore and an 8.6%

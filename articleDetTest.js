@@ -1,110 +1,133 @@
-(async function bootstrapPriceWidget() {
-  // ---- Local State ----
-  const doc = self.document;
-  const signalDiv = doc.getElementById("zzazz-signal-div");
-  const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
-  const BASE_URL = "https://beta.a.zzazz.com/event";
-  const ENABLE_API = `https://cdn.zzazz.com/widget-rules/${trackingId}.json`;
-  const PRICE_API = "https://beta.v.zzazz.com/v3/price";
+const BASE_URL = "https://beta.a.zzazz.com/event";
 
-  let session = { user_id: null, event_id: null };
-  let eventQueue = [];
-  let sessionReady = false;
-  let flushing = false;
-  let lastPrice = null;
-  let widgetVisible = false;
-  let pollTimeOut = null;
-  let polledUrl = null;
-  let pageVisitTime = null;
-  let isPriced = false;
+function getDeviceDimensions() {
+  return {
+    width: window.innerWidth || document.documentElement.clientWidth,
+    height: window.innerHeight || document.documentElement.clientHeight,
+  };
+}
 
-  function debug(msg) {
-    const dbg = self.document.getElementById("debug");
-    if (dbg) {
-      dbg.textContent += "\n \n \n" + msg;
-    }
+// --- Analytics ---
+async function sendPageview({ url }) {
+  const device = getDeviceDimensions();
+  const user_id = localStorage.getItem("user_id") || "";
+  const payload = { url, device, type: "pageview" };
+
+  try {
+    const res = await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(user_id && { "user-id": user_id }),
+      },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    localStorage.setItem("user_id", json.user_id);
+    localStorage.setItem("event_id", json.event_id);
+  } catch (err) {
+    console.error("Pageview error:", err);
   }
+}
 
-  // ---- Remote Enable ----
-  async function isPillEnabled() {
-    try {
-      const res = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
-      const data = await res.json();
-      return data.showWidget === true;
-    } catch (err) {
-      console.error("Enable API error:", err);
-      return false;
-    }
+async function sendPoll() {
+  const user_id = localStorage.getItem("user_id") || "TEST_ID";
+  const event_id = localStorage.getItem("event_id") || "TEST_ID";
+  const payload = { type: "poll", id: event_id };
+
+  try {
+    await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": user_id,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error("Poll error:", err);
   }
+}
 
-  // ---- Price Logic ----
-  async function injectPriceArticleLevel() {
-    const articleUrl = signalDiv?.getAttribute("data-url");
-    debug(`Article URL: ${articleUrl}`);
-    if (!articleUrl) return;
+async function sendPriceEvent({ price, currency }) {
+  const user_id = localStorage.getItem("user_id") || "TEST_ID";
+  const event_id = localStorage.getItem("event_id") || "TEST_ID";
+  const payload = { type: "price", id: event_id, price, currency };
 
-    try {
-      const res = await fetch(`${PRICE_API}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: [articleUrl], currency: "inr" }),
-      });
+  try {
+    await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "user-id": user_id,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error("Price event error:", err);
+  }
+}
 
-      const data = await res.json();
-      debug(`Price API response: ${JSON.stringify(data)}`);
+// --- Price Injection ---
+let lastPrice = null;
+let priceEventSent = false;
+let widgetVisible = false;
 
+const injectPriceArticleLevel = () => {
+  const signalDiv = document.getElementById("zzazz-signal-div");
+  const articleUrl = signalDiv.getAttribute("data-url");
+  const priceEl = document.getElementById("zzazz-price");
+  const trendElUp = document.getElementById("zzazz-trend-up");
+  const trendElDown = document.getElementById("zzazz-trend-down");
+
+  const payload = JSON.stringify({ urls: [articleUrl], currency: "inr" });
+
+  fetch("https://v.zzazz.com/v2/price", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+  })
+    .then((res) => res.json())
+    .then((data) => {
       const priceData = data[articleUrl];
+      if (!priceData || priceData.price === undefined) return;
 
-      // Check if valid price data exists
-      if (
-        !priceData ||
-        typeof priceData.qap !== "number" ||
-        isNaN(priceData.qap)
-      ) {
-        widgetVisible = false;
-        return;
-      }
+      const newPrice = priceData.price.toFixed(2);
 
-      const priceEl = doc.getElementById("zzazz-price");
-      const trendElUp = doc.getElementById("zzazz-trend-up");
-      const trendElDown = doc.getElementById("zzazz-trend-down");
-
-      const price = priceData.qap.toFixed(2);
-
-      debug(`Fetched Price: ${price}`);
-
-      // Update DOM safely
-      const priceSpans = priceEl.querySelectorAll("span");
-      if (priceSpans.length >= 2) {
-        // Update the first span (price)
-        priceSpans[0].textContent = `${price} `;
-        // Keep the second span (QAP) unchanged
-      }
-
-      debug(`Updated span 0: ${price}`);
-
+      // ✅ Show the widget once price is available
       if (!widgetVisible) {
+        signalDiv.classList.remove("hidden");
         widgetVisible = true;
       }
 
-      if (lastPrice !== null) {
-        trendElUp.style.display = price >= lastPrice ? "flex" : "none";
-        trendElDown.style.display = price < lastPrice ? "flex" : "none";
+      // Send event once
+      if (!priceEventSent) {
+        sendPriceEvent({ price: priceData.price, currency: "inr" });
+        priceEventSent = true;
       }
-      lastPrice = price;
-    } catch (err) {
-      console.error("Price fetch error:", err);
-    }
-  }
 
-  // ---- Bootstrap ----
-  const enabled = await isPillEnabled();
-  if (!enabled) {
-    console.warn("Price pill disabled remotely.");
-    return;
-  }
+      // Update price
+      priceEl.firstChild.textContent = newPrice + " ";
 
-  debug("Price pill enabled by remote rules.");
-  // injectPriceArticleLevel();
-  setInterval(injectPriceArticleLevel, 3000);
-})();
+      // Update trend icon
+      if (lastPrice !== null) {
+        if (newPrice > lastPrice) {
+          trendElUp.style.display = "flex";
+          trendElDown.style.display = "none";
+        } else if (newPrice < lastPrice) {
+          trendElDown.style.display = "flex";
+          trendElUp.style.display = "none";
+        }
+      }
+
+      lastPrice = newPrice;
+    })
+    .catch((err) => console.error("Price fetch error:", err));
+};
+
+// Poll price every 2s
+setInterval(injectPriceArticleLevel, 2000);
+
+// Analytics
+sendPageview({ url: window.location.origin });
+setInterval(sendPoll, 10000);
