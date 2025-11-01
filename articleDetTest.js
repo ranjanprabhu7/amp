@@ -40,7 +40,7 @@
   // ---- Price Logic ----
   async function injectPriceArticleLevel() {
     const articleUrl = signalDiv?.getAttribute("data-url");
-    debug("Article URL:", articleUrl);
+    debug(`Article URL: ${articleUrl}`);
     if (!articleUrl) return;
 
     try {
@@ -51,7 +51,7 @@
       });
 
       const data = await res.json();
-      debug("Price API response:", data);
+      debug(`Price API response: ${JSON.stringify(data)}`);
 
       const priceData = data[articleUrl];
 
