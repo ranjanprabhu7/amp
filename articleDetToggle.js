@@ -246,7 +246,8 @@
       const price = priceData.qap.toFixed(2);
       sendPriceEvent({
         url: articleUrl,
-        price: priceData.qap,
+        qap: priceData.qap,
+        price: priceData.price,
         currency: "inr",
       });
 
