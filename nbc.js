@@ -141,7 +141,7 @@ const injectPriceArticleLevel = () => {
 };
 
 // Run every 2s for price updates
-setInterval(injectPriceArticleLevel, 2000);
+setInterval(injectPriceArticleLevel, 4000);
 
 // Analytics
 sendPageview({ url: "https://hindustantimes.com/amp" });
