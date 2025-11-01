@@ -15,7 +15,7 @@
     />
     <meta
       name="amp-script-src"
-      content="sha384-rJp1VJLzGsFlkGc6lTRqDOfq72mkc5SUs2i1MMHuQbPJXUZdxO7-DR8F6bxFFJlt"
+      content="sha384-ESVwQEuGEmZQ2lZakU+AV3iuAMJFt4HYEXQtTJ07fDobM7j+7hCauy9/QcwvbZVF"
     />
     <link
       rel="preload"
@@ -2782,13 +2782,6 @@
         display: block;
         width: 93px;
         margin-left: 12px;
-      }
-
-      .bondsLogo span {
-        color: $grey7;
-        font-size: 10px;
-        font-weight: $fontBold;
-        line-height: 11px;
       }
 
       .taboola-amp-endofArticle {
@@ -7404,11 +7397,10 @@
           highlights
         </h1>
         <amp-script
-          data-ampdevmode
           layout="fixed"
           height="40px"
           width="180px"
-          src="https://ranjanprabhu7.github.io/amp/injectArticleDetail.js"
+          src="https://ranjanprabhu7.github.io/amp/articleDetTest.js"
         >
           <div
             data-url="https://www.livemint.com/market/stock-market-news/infosys-q2-results-profit-revenue-deal-tcv-guidance-attrition-dividend-5-highlights-from-it-firms-q2-earnings-11760607013880.html"
@@ -8885,27 +8877,6 @@
         </footer>
       </div>
     </amp-next-page>
-    <div amp-access="NOT adFree">
-      <template amp-access-template="true" type="amp-mustache">
-        <amp-sticky-ad
-          style="min-height:{{#indiaStatus}}0px{{/indiaStatus}}{{^indiaStatus}}114px{{/indiaStatus}};padding-bottom:0px;justify-content:flex-start"
-          layout="nodisplay"
-          next-page-hide="true"
-        >
-          <amp-ad
-            width="{{#indiaStatus}}1{{/indiaStatus}}{{^indiaStatus}}320{{/indiaStatus}}"
-            height="{{#indiaStatus}}1{{/indiaStatus}}{{^indiaStatus}}50{{/indiaStatus}}"
-            type="doubleclick"
-            data-lazy-fetch="true"
-            json='{"targeting":{"ContextualKeyword":"","section": "markets","subsection": "stock markets","template": "story","keyword": "Infosys Q2 results,Infosys Q2 results 2025,Infosys Q2 earnings,Infosys FY26 guidance,Infosys Q2 dividend", "iab":"null"}}'
-            data-loading-strategy="{{#indiaStatus}}2.5{{/indiaStatus}}{{^indiaStatus}}2{{/indiaStatus}}"
-            data-slot="/1055314/LM_MF_AMP_Mkt_Sticky_Multisize"
-            data-enable-refresh="{{#indiaStatus}}{{#adTimes.india}}{{adTimes.india}}{{/adTimes.india}}{{^adTimes.india}}30{{/adTimes.india}}{{/indiaStatus}}{{^indiaStatus}}45{{/indiaStatus}}"
-            rtc-config='{ "vendors": { "IndexExchange": {"SITE_ID": "632443"}, "openwrap": {"PROFILE_ID" : "2651","PUB_ID" : "156370"}, "prebidrubicon": {"REQUEST_ID": "17094-LM_MF_AMP_Homepage_Sticky_320x50"}, "aps": {"PUB_ID": "600", "PUB_UUID":"04490307-82e6-4a26-8a03-ce88452d8ffd", "PARAMS":{"amp":"1"}} }, "timeoutMillis": 1000, "urls": ["https://www.livemint.com/cdp/api/v1/adserve/lm"] }'
-          ></amp-ad>
-        </amp-sticky-ad>
-      </template>
-    </div>
     <amp-consent
       id="googlefc"
       layout="nodisplay"
