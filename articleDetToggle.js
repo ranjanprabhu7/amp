@@ -211,6 +211,7 @@
 
   // ---- Remote Enable ----
   async function isPillEnabled() {
+    console.log('trackingId', trackingId);
     try {
       const res = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
       const data = await res.json();
