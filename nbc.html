@@ -13,13 +13,9 @@
       name="viewport"
       content="width=device-width,minimum-scale=1,initial-scale=1"
     />
-    <!-- <meta
+    <meta
       name="amp-script-src"
-      content="sha384-S3Z28+b4JeohrS8Sky/cPNihy9WK85vgSIsawubMKxV6MIXOwIQKHD+4Jn3FuqAK"
-    /> -->
-     <meta
-      name="amp-script-src"
-      content="sha384-sWQnsJ12UsBXYesXsMum31rCq0MEc0xGR7T97s9AP/So1s3+7wYoPCtu+VQD3EGI"
+      content="sha384-i4CQWXOuSLCT7jct0qtfHHyLDt29LPMY1xbMm3uCiFWb8579b2BDXDJiFr0FEVkq"
     />
     <link
       rel="preload"
@@ -4226,6 +4222,45 @@
       .mascotToggle:checked ~ .stockGroWrapper {
         display: none;
       }
+
+      /* zzazz styles */
+      #zzazz-signal-div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #333;
+        border-radius: 120px;
+        padding: 6px 12px;
+        background: #fff;
+        font-family: "Inter", sans-serif;
+        width: fit-content;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #zzazz-signal-div.hidden {
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      #zzazz-price {
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      #zzazz-trend-up,
+      #zzazz-trend-down {
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 16px;
+        width: 16px;
+      }
     </style>
   </head>
 
@@ -7373,59 +7408,40 @@
           height="40px"
           width="180px"
           src="https://ranjanprabhu7.github.io/amp/nbc.js"
+          id="zzazz-js"
         >
           <div
             data-url="https://www.livemint.com/market/stock-market-news/infosys-q2-results-profit-revenue-deal-tcv-guidance-attrition-dividend-5-highlights-from-it-firms-q2-earnings-11760607013880.html"
             id="zzazz-signal-div"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              border: 1px solid #333;
-              border-radius: 120px;
-              padding: 6px 12px;
-              background: #fff;
-              font-family: 'Inter', sans-serif;
-              width: fit-content;
-            "
+            class="hidden"
+            data-zzazz-t-id="0999894d-399f-4e1f-ac8e-25861d437ce8"
+            style="display: flex; align-items: center; gap: 6px; cursor: pointer"
           >
-            <!-- ✅ Static Logo -->
+            <!-- Logo -->
             <amp-img
               src="https://cdn.zzazz.com/assets/zzazz_logo_white.svg"
               width="20"
               height="20"
               layout="fixed"
               alt="zzazz-logo"
-              style="filter: invert(1); display: block"
+              style="filter: invert(1)"
             >
+              <amp-img
+                placeholder
+                src="https://cdn.zzazz.com/assets/logo_thumbnail.png"
+                width="20"
+                height="20"
+                layout="fixed"
+              ></amp-img>
             </amp-img>
 
-            <!-- ✅ Price Placeholder -->
-            <h2
-              id="zzazz-price"
-              style="
-                margin: 0;
-                padding: 0;
-                font-size: 16px;
-                font-weight: 600;
-                color: #1a1a1a;
-              "
-            >
-              0.00 <span style="font-size: 16px; font-weight: 600">QAP</span>
+            <!-- Price -->
+            <h2 id="zzazz-price">
+              --.-- <span style="font-size: 16px; font-weight: 600">QAP</span>
             </h2>
 
-            <!-- ✅ Trend Indicator Placeholder -->
-            <div
-              id="zzazz-trend-up"
-              style="
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 16px;
-                width: 16px;
-              "
-            >
+            <!-- Trend Up -->
+            <div id="zzazz-trend-up">
               <svg
                 width="15"
                 height="16"
@@ -7439,17 +7455,9 @@
                 />
               </svg>
             </div>
-            <div
-              id="zzazz-trend-down"
-              style="
-                border-radius: 4px;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                height: 16px;
-                width: 16px;
-              "
-            >
+
+            <!-- Trend Down -->
+            <div id="zzazz-trend-down" style="display: none">
               <svg
                 width="15"
                 height="16"
