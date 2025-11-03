@@ -144,12 +144,12 @@ const priceWidget = new PriceWidget();
 
 // Start analytics and wait for pageview before polling
 (async () => {
-  //   await sendPageview({
-  //     url: window.location.origin || document.location.origin || "",
-  //   });
+  await sendPageview({
+    url: window.location.origin || document.location.origin || "",
+  });
 
-  //   const isPillEnabled = await priceWidget.isPillEnabled();
-  //   if (!isPillEnabled) return;
+  const isPillEnabled = await priceWidget.isPillEnabled();
+  if (!isPillEnabled) return;
 
   priceWidget.fetchAndUpdate();
   setInterval(() => priceWidget.fetchAndUpdate(), 3000);
