@@ -282,7 +282,7 @@
   }
 
   console.log("Price pill enabled by remote rules.");
-  sendPageViewEvent(window.location.origin || document.location.origin || "");
+  sendPageViewEvent(window.location.origin);
   injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
