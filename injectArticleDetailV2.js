@@ -2,8 +2,8 @@ const BASE_URL = "https://beta.a.zzazz.com/event";
 
 function getDeviceDimensions() {
   return {
-    width: window.innerWidth || document.documentElement.clientWidth,
-    height: window.innerHeight || document.documentElement.clientHeight,
+    width: window.innerWidth || document.documentElement.clientWidth || 0,
+    height: window.innerHeight || document.documentElement.clientHeight || 0,
   };
 }
 
@@ -33,6 +33,9 @@ async function sendPageview({ url }) {
 async function sendPoll() {
   const user_id = localStorage.getItem("user_id") || "TEST_ID";
   const event_id = localStorage.getItem("event_id") || "TEST_ID";
+
+  if (!event_id || !user_id) return;
+
   const payload = { type: "poll", id: event_id };
 
   try {
@@ -126,8 +129,8 @@ const injectPriceArticleLevel = () => {
 };
 
 // Poll price every 2s
-setInterval(injectPriceArticleLevel, 2000);
+setInterval(injectPriceArticleLevel, 3000);
 
 // Analytics
-sendPageview({ url: "https://hindustantimes.com/amp" });
-setInterval(sendPoll, 10000);
+sendPageview({ url: window.location.origin || document.location.origin || "" });
+setInterval(sendPoll, 5000);
