@@ -1,5 +1,6 @@
 const BASE_URL = "https://a.zzazz.com/event";
 const PRICE_API_URL = "https://v.zzazz.com/v2/price";
+const WIDGET_RULES_API_URL = `https://cdn.zzazz.com/widget-rules`;
 
 // --- Global State ---
 let userId = "";
@@ -43,10 +44,10 @@ async function sendPageview({ url }) {
   };
 
   const response = await sendEvent(payload);
-  if (response) {
-    userId = response.user_id;
-    eventId = response.event_id;
-  }
+  if (!response) return;
+  userId = response.user_id;
+  eventId = response.event_id;
+  setInterval(sendPoll, 5000);
 }
 
 async function sendPoll() {
@@ -85,7 +86,7 @@ class PriceWidget {
   updateTrend(newPrice) {
     if (this.lastPrice === null) return;
 
-    const trendUp = newPrice > this.lastPrice;
+    const trendUp = newPrice >= this.lastPrice;
     const trendDown = newPrice < this.lastPrice;
 
     this.trendUpEl.style.display = trendUp ? "flex" : "none";
@@ -126,6 +127,17 @@ class PriceWidget {
       console.error("Price fetch error:", err);
     }
   }
+
+  async isPillEnabled() {
+    const signalDiv = document.getElementById("zzazz-signal-div");
+    const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
+    const data = await fetch(
+      `${WIDGET_RULES_API_URL}/${trackingId}.json?dt=${Date.now()}`
+    );
+    const rules = await data.json();
+    console.log({ rules });
+    return rules.showWidget;
+  }
 }
 
 // --- Initialize ---
@@ -137,8 +149,9 @@ const priceWidget = new PriceWidget();
     url: window.location.origin || document.location.origin || "",
   });
 
-  // Start polling after we have userId and eventId
-  setInterval(sendPoll, 5000);
+  const isPillEnabled = await priceWidget.isPillEnabled();
+  if (!isPillEnabled) return;
+
   priceWidget.fetchAndUpdate();
   setInterval(() => priceWidget.fetchAndUpdate(), 3000);
 })();
