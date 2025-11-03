@@ -1,7 +1,7 @@
 (async function bootstrapPriceWidget() {
   // ---- Local State ----
   const signalDiv = document.getElementById("zzazz-signal-div");
-  const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
+  // const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
   const BASE_URL = "https://a.zzazz.com/event";
   const ENABLE_API = `https://cdn.zzazz.com/widget-rules/0999894d-399f-4e1f-ac8e-25861d437ce8.json`;
   const PRICE_API = "https://beta.v.zzazz.com/v3/price";
