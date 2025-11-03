@@ -60,4 +60,6 @@ async function injectPriceArticleLevel() {
 }
 
 console.log("Price pill enabled by remote rules.");
-injectPriceArticleLevel();
+setTimeout(() => {
+  injectPriceArticleLevel();
+}, 2000);
