@@ -19,8 +19,8 @@
 
   // ---- Utils ----
   const getBrowserDimensions = () => ({
-    width: window?.innerWidth || 0,
-    height: window?.innerHeight || 0,
+    width: window?.innerWidth || document?.documentElement?.clientWidth || 0,
+    height: window?.innerHeight || document?.documentElement?.clientHeight || 0,
   });
 
   const getDeviceDimensions = () => ({
@@ -55,8 +55,8 @@
     sendClickEvent(e);
   }, 500);
 
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("click", handleClick);
+  window?.addEventListener("scroll", handleScroll);
+  window?.addEventListener("click", handleClick);
 
   // ---- Event Sender ----
   async function sendEvent(type, extraPayload = {}) {
@@ -282,7 +282,9 @@
   }
 
   console.log("Price pill enabled by remote rules.");
-  sendPageViewEvent(window.location.origin);
+  sendPageViewEvent(
+    window?.location?.origin || document?.location?.origin || ""
+  );
   injectPriceArticleLevel();
   setInterval(injectPriceArticleLevel, 3000);
 })();
