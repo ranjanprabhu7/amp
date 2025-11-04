@@ -211,10 +211,7 @@
 
   // ---- Remote Enable ----
   async function isPillEnabled() {
-    console.log("trackingId", trackingId);
     try {
-      const signalDiv = document.getElementById("zzazz-signal-div");
-      const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
       const res = await fetch(
         `${ENABLE_API}/${trackingId}.json?dt=${Date.now()}`
       );
