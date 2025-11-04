@@ -62,6 +62,7 @@
   async function sendEvent(type, extraPayload = {}) {
     const payload = {
       type,
+      is_amp: true,
       ...extraPayload,
       id: session.event_id,
       pageId: session.event_id,
