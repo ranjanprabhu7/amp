@@ -141,19 +141,15 @@
   }
 
   async function sendPriceEvent(data) {
-    if (isPriced) return; // already queued or sent
-
-    if (!sessionReady) {
-      isPriced = true; // mark as handled to avoid multiple queues
-      return queueEvent("price", data);
-    }
-
-    isPriced = true; // mark early to avoid race conditions
-    try {
-      await sendEvent("price", data);
-    } catch (err) {
-      console.error(err);
-      isPriced = false; // optional rollback if you want to retry later
+    // if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
+    if (!isPriced) {
+      if (!sessionReady) return queueEvent("price", data);
+      try {
+        await sendEvent("price", data);
+        isPriced = true;
+      } catch (err) {
+        console.log(err);
+      }
     }
   }
 
