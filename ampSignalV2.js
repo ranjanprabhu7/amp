@@ -62,7 +62,6 @@
   async function sendEvent(type, extraPayload = {}) {
     const payload = {
       type,
-      is_amp: true,
       ...extraPayload,
     };
     if (type === "price" || type === "poll") {
@@ -119,6 +118,7 @@
       device: getDeviceDimensions(),
       url: url,
       referrer: document.referrer,
+      is_amp: true,
     };
 
     const { ok, data } = await sendEvent("pageview", payload);
