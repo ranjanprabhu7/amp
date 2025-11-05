@@ -252,7 +252,7 @@
         return;
       }
 
-      const price = priceData.qap.toFixed(2);
+      const price = priceData.qap;
       sendPriceEvent({
         url: articleUrl,
         qap: priceData.qap,
@@ -264,7 +264,7 @@
       const trendElUp = document.getElementById("zzazz-trend-up");
       const trendElDown = document.getElementById("zzazz-trend-down");
 
-      priceEl.firstChild.textContent = `${price} `;
+      priceEl.firstChild.textContent = `${price.toFixed(2)} `;
 
       if (!widgetVisible) {
         signalDiv.classList.remove("hidden");
