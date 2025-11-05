@@ -16,6 +16,7 @@
   let polledUrl = null;
   let pageVisitTime = null;
   let isPriced = false;
+  let isSendingPriceEvent = false;
 
   // ---- Utils ----
   const getBrowserDimensions = () => ({
@@ -142,14 +143,18 @@
 
   async function sendPriceEvent(data) {
     // if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
-    if (!isPriced) {
-      if (!sessionReady) return queueEvent("price", data);
-      try {
-        await sendEvent("price", data);
-        isPriced = true;
-      } catch (err) {
-        console.log(err);
-      }
+    if (isPriced || isSending) return; // already sent or sending
+    if (!sessionReady) {
+      return queueEvent("price", data);
+    }
+    isSending = true; // lock to prevent duplicate events
+    try {
+      await sendEvent("price", data);
+      isPriced = true; // mark as done
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isSending = false; // release the lock
     }
   }
 
