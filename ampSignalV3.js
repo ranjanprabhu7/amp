@@ -3,7 +3,7 @@
   const signalDiv = document.getElementById("zzazz-signal-div");
   const trackingId = signalDiv?.getAttribute("data-zzazz-t-id");
   const BASE_URL = "https://a.zzazz.com/event";
-  const ENABLE_API = `https://cdn.zzazz.com/widget-rules`;
+  const ENABLE_API = `https://cdn.zzazz.com/widget-rules/0999894d-399f-4e1f-ac8e-25861d437ce8.json`;
   const PRICE_API = "https://beta.v.zzazz.com/v3/price";
 
   let session = { user_id: null, event_id: null };
@@ -220,9 +220,7 @@
   // ---- Remote Enable ----
   async function isPillEnabled() {
     try {
-      const res = await fetch(
-        `${ENABLE_API}/${trackingId}.json?dt=${Date.now()}`
-      );
+      const res = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
       const data = await res.json();
       return data.showWidget === true;
     } catch (err) {
