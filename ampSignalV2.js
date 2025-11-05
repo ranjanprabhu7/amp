@@ -143,18 +143,18 @@
 
   async function sendPriceEvent(data) {
     // if (polledUrl && data.url.includes(polledUrl) && !isPriced) {
-    if (isPriced || isSending) return; // already sent or sending
+    if (isPriced || isSendingPriceEvent) return; // already sent or sending
     if (!sessionReady) {
       return queueEvent("price", data);
     }
-    isSending = true; // lock to prevent duplicate events
+    isSendingPriceEvent = true; // lock to prevent duplicate events
     try {
       await sendEvent("price", data);
       isPriced = true; // mark as done
     } catch (err) {
       console.error(err);
     } finally {
-      isSending = false; // release the lock
+      isSendingPriceEvent = false; // release the lock
     }
   }
 
