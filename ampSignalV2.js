@@ -64,9 +64,12 @@
       type,
       is_amp: true,
       ...extraPayload,
-      id: session.event_id,
-      pageId: session.event_id,
     };
+    if (type === "price" || type === "poll") {
+      payload.id = session.event_id;
+    } else if (type === "scroll" || type === "click") {
+      payload.pageId = session.event_id;
+    }
     const headers = {
       Accept: "application/json",
       "Content-Type": "application/json",
