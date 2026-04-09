@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>zzazz Signal Pill</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    #zzazz-signal-div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #333;
+      border-radius: 120px;
+      padding: 6px 12px;
+      background: #fff;
+      font-family: "Inter", sans-serif;
+      width: fit-content;
+      transition: opacity 0.3s ease;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #zzazz-signal-div.hidden {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    #zzazz-price {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    #zzazz-trend-up,
+    #zzazz-trend-down {
+      display: flex;
+      align-items: center;
+      justify-content: content;
+      height: 16px;
+      width: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="zzazz-signal-div" class="hidden">
+    <!-- Logo -->
+    <img
+      src="https://cdn.zzazz.com/assets/zzazz_logo_white.svg"
+      width="20"
+      height="20"
+      alt="zzazz"
+      style="filter: invert(1); flex-shrink: 0;"
+    />
+
+    <!-- Price -->
+    <h2 id="zzazz-price">--.-- <span style="font-size:16px;font-weight:600">QAP</span></h2>
+
+    <!-- Trend Up -->
+    <div id="zzazz-trend-up" style="display:none">
+      <svg width="15" height="16" viewBox="0 0 42 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.2143 0.939536C19.9977 -0.313048 21.8221 -0.313046 22.6056 0.939538L41.5123 31.168C42.3455 32.5 41.3878 34.2285 39.8167 34.2285H2.00316C0.431994 34.2285 -0.525642 32.5 0.307519 31.168L19.2143 0.939536Z" fill="#2ABA7E"/>
+      </svg>
+    </div>
+
+    <!-- Trend Down -->
+    <div id="zzazz-trend-down" style="display:none">
+      <svg width="15" height="16" viewBox="0 0 42 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.2143 33.289C19.9977 34.5416 21.8221 34.5416 22.6056 33.289L41.5123 3.06056C42.3455 1.72849 41.3878 0 39.8167 0H2.00316C0.431994 0 -0.525642 1.72849 0.307519 3.06056L19.2143 33.289Z" fill="#F0616D"/>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (async function bootstrapPriceWidget() {
+      // ---- Read config from URL query params (set by publisher) ----
+      const params     = new URLSearchParams(window.location.search);
+      const articleUrl = params.get("url") || "";
+      const trackingId = params.get("t-id") || "";
+
+      if (!articleUrl || !trackingId) {
+        console.warn("zzazz: missing url or t-id query params");
+        return;
+      }
+
+      const BASE_URL   = "https://a.zzazz.com/event";
+      const ENABLE_API = `https://cdn.zzazz.com/widget-rules/${trackingId}.json`;
+      const PRICE_API  = "https://beta.v.zzazz.com/api/v3/price";
+
+      const signalDiv  = document.getElementById("zzazz-signal-div");
+      const priceEl    = document.getElementById("zzazz-price");
+      const trendUp    = document.getElementById("zzazz-trend-up");
+      const trendDown  = document.getElementById("zzazz-trend-down");
+
+      // ---- State ----
+      let session      = { user_id: null, event_id: null };
+      let eventQueue   = [];
+      let sessionReady = false;
+      let flushing     = false;
+      let lastPrice    = null;
+      let widgetVisible = false;
+      let pollTimeOut  = null;
+      let polledUrl    = null;
+      let pageVisitTime = null;
+      let isPriced     = false;
+
+      // ---- Event sender ----
+      async function sendEvent(type, extra = {}) {
+        const payload = { type, ...extra };
+        if (type === "price" || type === "poll") payload.id = session.event_id;
+
+        const headers = {
+          "Accept":       "application/json",
+          "Content-Type": "application/json",
+          "tracking-id":  trackingId,
+          ...(session.user_id && { "user-id": session.user_id }),
+        };
+
+        try {
+          const res  = await fetch(BASE_URL, { method: "POST", credentials: "include", headers, body: JSON.stringify(payload) });
+          const data = await res.json().catch(() => null);
+          return { ok: res.ok, data };
+        } catch (err) {
+          console.error(`zzazz: failed to send ${type}`, err);
+          return { ok: false, data: null };
+        }
+      }
+
+      // ---- Queue (holds events until session is ready) ----
+      function queueEvent(type, payload = {}) {
+        eventQueue.push({ type, payload });
+        flushEventQueue();
+      }
+
+      async function flushEventQueue() {
+        if (!sessionReady || flushing) return;
+        flushing = true;
+        while (eventQueue.length) {
+          const { type, payload } = eventQueue.shift();
+          await sendEvent(type, payload);
+        }
+        flushing = false;
+      }
+
+      function updateSession({ user_id, event_id }) {
+        if (user_id && !session.user_id) session.user_id = user_id;
+        if (event_id && !session.event_id) {
+          session.event_id = event_id;
+          sessionReady = true;
+          flushEventQueue();
+        }
+      }
+
+      // ---- Events ----
+      async function sendPageViewEvent(url) {
+        clearTimeout(pollTimeOut);
+        polledUrl     = url;
+        isPriced      = false;
+        pageVisitTime = Date.now();
+        const { ok, data } = await sendEvent("pageview", {
+          is_amp:  true,
+          url,
+          referrer: document.referrer || "",
+        });
+        if (ok && data) updateSession(data);
+        sendPollEvent(url);
+      }
+
+      async function sendPollEvent(url) {
+        if (url !== polledUrl) return;
+        const waitTime = (Date.now() - pageVisitTime > 600000) ? 60000 : 5000;
+        try { await sendEvent("poll"); } catch (e) { console.error(e); }
+        finally { pollTimeOut = setTimeout(() => sendPollEvent(url), waitTime); }
+      }
+
+      async function sendPriceEvent(data) {
+        if (isPriced) return;
+        if (!sessionReady) { isPriced = true; queueEvent("price", data); return; }
+        isPriced = true;
+        try { await sendEvent("price", data); }
+        catch (err) { console.error(err); isPriced = false; }
+      }
+
+      // ---- Remote enable check ----
+      async function isPillEnabled() {
+        try {
+          const res  = await fetch(`${ENABLE_API}?dt=${Date.now()}`);
+          const data = await res.json();
+          return data.showWidget === true;
+        } catch (err) {
+          console.error("zzazz: enable check failed", err);
+          return false;
+        }
+      }
+
+      // ---- Price rendering ----
+      function setPriceText(value) {
+        let tn = priceEl.firstChild;
+        if (!tn || tn.nodeType !== Node.TEXT_NODE) {
+          tn = document.createTextNode("");
+          priceEl.insertBefore(tn, priceEl.firstChild);
+        }
+        tn.textContent = `${value.toFixed(2)} `;
+      }
+
+      async function fetchAndRenderPrice() {
+        try {
+          const res      = await fetch(PRICE_API, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ urls: [articleUrl], currency: "inr" }),
+          });
+          const data      = await res.json();
+          const priceData = data[articleUrl];
+
+          if (!priceData || isNaN(priceData.qap)) {
+            signalDiv.classList.add("hidden");
+            widgetVisible = false;
+            return;
+          }
+
+          const price = Number(priceData.qap);
+          sendPriceEvent({ url: articleUrl, qap: price, price: priceData.price, currency: "inr" });
+          setPriceText(price);
+
+          if (!widgetVisible) {
+            signalDiv.classList.remove("hidden");
+            widgetVisible = true;
+          }
+
+          if (lastPrice !== null) {
+            trendUp.style.display   = price >= lastPrice ? "flex" : "none";
+            trendDown.style.display = price <  lastPrice ? "flex" : "none";
+          }
+          lastPrice = price;
+        } catch (err) {
+          console.error("zzazz: price fetch error", err);
+          signalDiv.classList.add("hidden");
+        }
+      }
+
+      // ---- Bootstrap ----
+      const enabled = await isPillEnabled();
+      if (!enabled) {
+        console.warn("zzazz: pill disabled remotely");
+        signalDiv.classList.add("hidden");
+        return;
+      }
+
+      sendPageViewEvent(articleUrl);
+      fetchAndRenderPrice();
+      setInterval(fetchAndRenderPrice, 3000);
+    })();
+  </script>
+</body>
+</html>

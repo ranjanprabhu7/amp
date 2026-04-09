@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html amp lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1" />
+
+  <!--
+    NO amp-script-src hash needed.
+    NO SHA to recompute when the widget JS changes.
+    Publishers embed this once and never touch it again.
+  -->
+
+  <title>AMP Signal Pill — amp-iframe architecture demo</title>
+
+  <!-- AMP boilerplate -->
+  <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style>
+  <noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+
+  <script async src="https://cdn.ampproject.org/v0.js"></script>
+
+  <!-- amp-iframe component — the only zzazz dependency publishers need -->
+  <script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+
+  <!--
+    OPTIONAL: use amp-analytics instead of the iframe's own scroll/click tracking.
+    Publishers likely already have amp-analytics on the page. You can supply a
+    config URL that fires events to a.zzazz.com without any extra JS.
+  -->
+  <!-- <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script> -->
+
+  <link rel="canonical" href="https://www.hindustantimes.com/cricket/sample-article" />
+
+  <style amp-custom>
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 16px;
+      color: #1a1a1a;
+    }
+
+    .article-meta {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 26px;
+      line-height: 1.3;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .signal-wrapper {
+      margin: 12px 0 20px;
+    }
+
+    p { line-height: 1.7; margin-bottom: 16px; color: #333; }
+
+    /*
+      The amp-iframe needs a placeholder — a sibling element AMP shows while
+      the iframe loads. We use a transparent 1x1 gif as the placeholder image.
+    */
+    .pill-placeholder {
+      width: 180px;
+      height: 40px;
+      background: #f0f0f0;
+      border-radius: 120px;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Simulated publisher article hero (pushes content past the 600px AMP iframe rule) -->
+  <amp-img
+    src="https://www.hindustantimes.com/ht-img/img/2025/11/04/550x309/ashwin_harman_1762239707686_1762239718030.jpg"
+    width="550"
+    height="309"
+    layout="responsive"
+    alt="Article hero image"
+  ></amp-img>
+
+  <div class="article-meta">Cricket · HT Sports Desk · Nov 04, 2025</div>
+
+  <h1>'Indian men's team never did this': Ashwin salutes Harmanpreet Kaur's rare gesture</h1>
+
+  <!--
+    ===========================================================================
+    ZZAZZ SIGNAL PILL — amp-iframe embed
+    ===========================================================================
+
+    How a publisher integrates this widget:
+
+    1. Add the amp-iframe component script in <head> (done above).
+
+    2. Paste this amp-iframe block wherever the pill should appear in the article.
+       Replace the two query params:
+         url   = canonical URL of the article being priced
+         t-id  = publisher's zzazz tracking ID
+
+    3. That's it. No SHA hash. No script tags. No custom CSS needed.
+       When zzazz updates pill.html or its JS, publishers get the update
+       automatically — zero coordination required.
+    ===========================================================================
+  -->
+  <div class="signal-wrapper">
+    <amp-iframe
+      width="180"
+      height="40"
+      layout="fixed"
+      frameborder="0"
+      scrolling="no"
+      allowtransparency
+      sandbox="allow-scripts allow-same-origin allow-popups"
+      src="https://ranjanprabhu7.github.io/amp/pill.html?url=https%3A%2F%2Fwww.hindustantimes.com%2Fcricket%2Findian-mens-team-never-did-this-101762239247738.html&t-id=0999894d-399f-4e1f-ac8e-25861d437ce8"
+    >
+      <!--
+        AMP requires a placeholder child element.
+        We use a lightweight transparent gif so nothing visible flashes in while
+        the iframe loads. Swap for a skeleton/shimmer if you prefer.
+      -->
+      <amp-img
+        placeholder
+        layout="fill"
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        alt=""
+      ></amp-img>
+    </amp-iframe>
+  </div>
+
+  <!--
+    OPTIONAL: amp-analytics for scroll/click/pageview events.
+    This runs natively in AMP — no JS required. Publishers already have this
+    on the page for their own analytics. You can provide a remote config URL
+    so they just point to yours.
+
+    Example config would fire to:
+      https://a.zzazz.com/event?type=pageview&url=${canonicalUrl}&t-id=TRACKING_ID
+  -->
+  <!--
+  <amp-analytics>
+    <script type="application/json">
+    {
+      "requests": {
+        "base": "https://a.zzazz.com/amp-event",
+        "pageview": "${base}?type=pageview&url=${canonicalUrl}&t-id=0999894d-399f-4e1f-ac8e-25861d437ce8",
+        "scroll":   "${base}?type=scroll&pct=${verticalScrollBoundary}&url=${canonicalUrl}&t-id=0999894d-399f-4e1f-ac8e-25861d437ce8"
+      },
+      "triggers": {
+        "trackPageview": {
+          "on": "visible",
+          "request": "pageview"
+        },
+        "trackScroll": {
+          "on": "scroll",
+          "scrollSpec": { "verticalBoundaries": [25, 50, 75, 90] },
+          "request": "scroll"
+        }
+      }
+    }
+    </script>
+  </amp-analytics>
+  -->
+
+  <p>
+    R Ashwin praised Harmanpreet Kaur for a humble post-match gesture that moved
+    Mithali Raj and Anjum Chopra after India's Women's World Cup triumph.
+  </p>
+
+  <p>
+    The Indian women's cricket team scripted history on Sunday, defeating South
+    Africa by 52 runs in the final to clinch the ICC Women's Cricket World Cup
+    for the first time since 2013. Captain Harmanpreet Kaur led from the front
+    with a commanding knock that set the platform for India's total of 260/8.
+  </p>
+
+  <p>
+    After the match, in a moment that captured the hearts of cricket fans across
+    the country, Harmanpreet was seen seeking the blessings of former captain
+    Mithali Raj and veteran commentator Anjum Chopra, both of whom were visibly
+    moved by the gesture.
+  </p>
+
+  <p>
+    Speaking on his YouTube channel, Ravichandran Ashwin called it a rare
+    display of respect and humility, noting that such gestures are seldom seen
+    in the men's dressing room.
+  </p>
+
+</body>
+</html>

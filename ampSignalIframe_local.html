@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--
+  LOCAL TESTING VERSION — uses file:// paths for pill.html instead of cdn.zzazz.com.
+
+  Open this file directly in a browser to test the amp-iframe architecture
+  without deploying anything.
+
+  NOTE: AMP validation is skipped here (no AMP boilerplate) because:
+    1. amp-iframe enforces a different origin requirement — relaxed in local testing
+    2. file:// iframes require allow-same-origin in sandbox
+
+  For real AMP validation, use ampSignalIframe.html with deployed CDN URLs.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>zzazz Signal Pill — Local iframe test</title>
+  <style>
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 16px;
+      color: #1a1a1a;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #e8f4fd;
+      border: 1px solid #bcd9f0;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #1a6fa8;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-size: 26px; line-height: 1.3; font-weight: 700; margin-bottom: 12px; }
+    .article-meta { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .signal-wrapper { margin: 12px 0 20px; }
+    p { line-height: 1.7; margin-bottom: 16px; color: #333; }
+
+    iframe {
+      border: none;
+      width: 180px;
+      height: 40px;
+      overflow: hidden;
+      display: block;
+    }
+
+    .arch-note {
+      background: #f9f9f9;
+      border-left: 3px solid #aaa;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #555;
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+    .arch-note code {
+      background: #eee;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="badge">LOCAL TEST — iframe architecture (no AMP runtime)</div>
+
+  <img
+    src="https://www.hindustantimes.com/ht-img/img/2025/11/04/550x309/ashwin_harman_1762239707686_1762239718030.jpg"
+    style="width:100%;border-radius:6px;margin-bottom:12px"
+    alt="Article hero"
+  />
+
+  <div class="article-meta">Cricket · HT Sports Desk · Nov 04, 2025</div>
+
+  <h1>'Indian men's team never did this': Ashwin salutes Harmanpreet Kaur's rare gesture</h1>
+
+  <div class="signal-wrapper">
+    <!--
+      In production (ampSignalIframe.html) this becomes:
+        <amp-iframe width="180" height="40" layout="fixed" ... src="https://ranjanprabhu7.github.io/amp/pill.html?url=...&t-id=...">
+
+      Here we use a plain <iframe> pointing to the local pill.html file.
+      The src query params are exactly what the CDN-hosted version would receive.
+    -->
+    <iframe
+      id="zzazz-pill"
+      src="pill.html?url=https%3A%2F%2Fwww.hindustantimes.com%2Fcricket%2Findian-mens-team-never-did-this-101762239247738.html&t-id=0999894d-399f-4e1f-ac8e-25861d437ce8"
+      scrolling="no"
+      title="zzazz signal pill"
+    ></iframe>
+  </div>
+
+  <div class="arch-note">
+    <strong>What you're testing:</strong> <code>pill.html</code> runs as a self-contained iframe.
+    It reads <code>url</code> and <code>t-id</code> from its own query string — no SHA hash,
+    no <code>amp-script</code> restrictions. <code>setInterval</code>, <code>fetch</code> with
+    credentials, and event listeners all work normally inside the iframe.
+    In production, replace this <code>&lt;iframe&gt;</code> with <code>&lt;amp-iframe&gt;</code>.
+  </div>
+
+  <p>
+    R Ashwin praised Harmanpreet Kaur for a humble post-match gesture that moved
+    Mithali Raj and Anjum Chopra after India's Women's World Cup triumph.
+  </p>
+
+  <p>
+    The Indian women's cricket team scripted history on Sunday, defeating South
+    Africa by 52 runs in the final to clinch the ICC Women's Cricket World Cup
+    for the first time since 2013.
+  </p>
+
+  <p>
+    After the match, Harmanpreet was seen seeking the blessings of former captain
+    Mithali Raj and veteran commentator Anjum Chopra, both of whom were visibly
+    moved by the gesture.
+  </p>
+
+</body>
+</html>
